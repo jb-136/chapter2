@@ -3,6 +3,8 @@ Project to quickly provide an overview of a clade, as a starting point for human
 
 This is inspired by projects such as Rod Page's iSpecies or the Sanderson et al.'s phylota, as well as by the issues we frequently see in students first learning about phylogenetics.
 
+This is for our lab's latest hackathon on May 29, 2019.
+
 Basic structure:
 
 ## Getting data
