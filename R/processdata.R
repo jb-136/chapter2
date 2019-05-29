@@ -95,7 +95,7 @@ check_numeric_vector <- function(x) {
 #' @return A vector of booleans
 #' @export
 check_continuous <- function(x) {
-  continuous <- sapply(x, check_numeric)
+  continuous <- sapply(x, check_numeric_vector)
   numeric_cols <- which(continuous)
   for (i in seq_along(numeric_cols)) {
     local_vector <- x[,numeric_cols[i]]
@@ -120,7 +120,7 @@ chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
     keep_continuous <- FALSE
   }
 
-  column_checks <- check_continuous(chapter2$data)
+  column_check <- check_continuous(chapter2$data)
   if(!keep_continuous) {
     column_check <- !column_check
   }
