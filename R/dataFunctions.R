@@ -176,7 +176,7 @@ get_genbank_count_by_gene <- function(taxon, focal.genes=c("COI", "18S", "28S", 
 #' taxon <- "Formicidae"
 #' results <- get_pubmed(taxon)
 #' print(paste("There are", results$count, "papers on", taxon, "and phylogeny"))
-#' print(results$recent.papers)
+#' print(results$recent.papers[,c("Date", "FirstAuthor")])
 
 get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
   clade.name<- rotl::tnrs_match_names(taxon)$unique_name[1]

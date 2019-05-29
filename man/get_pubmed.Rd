@@ -23,5 +23,5 @@ This will give the total number of pubmed articles mentioning the taxon name and
 taxon <- "Formicidae"
 results <- get_pubmed(taxon)
 print(paste("There are", results$count, "papers on", taxon, "and phylogeny"))
-print(results$recent.papers)
+print(results$recent.papers[,c("Date", "FirstAuthor")])
 }
