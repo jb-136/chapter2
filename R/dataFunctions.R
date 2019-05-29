@@ -84,9 +84,7 @@ fishbase_genus_query <- function (genus) {
 fishbase_species_query <- function (species) {
   all.records <- data.frame()
   for (species_index in seq_along(species)) {
-    all.records <- plyr::rbind.fill(all.records, rfishbase::distribution(species_list=species[species_index])
+    all.records <- plyr::rbind.fill(all.records, rfishbase::distribution(species_list=species[species_index]))
   }
   return(all.records)
 }
-
- 
