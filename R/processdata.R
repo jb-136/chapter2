@@ -33,7 +33,7 @@ match_data <- function(tree, data, warnings = FALSE) {
   else {
     data.names <- rownames(data)
   }
-  nc <- name.check(phy, data)
+  nc <- geiger::name.check(phy, data)
   if (is.na(nc[[1]][1]) | nc[[1]][1] != "OK") {
     if (length(nc[[1]] != 0)) {
       phy = ape::drop.tip(phy, as.character(nc[[1]]))
@@ -77,24 +77,33 @@ chapter2_convert_to_Beaulieu_data <- function(chapter2) {
   return(list(phy=chapter2$phy, data=cbind.data.frame(taxa=rownames(match_data$data), chapter2$data[,1:ncol(chapter2$data)])))
 }
 
-check_continuous <- function(x) {
-  FindNumeric <- apply(x, 2, as.numeric)# find numeric columns via coercion
-  NonNumeric <- colnames(FindNumeric)[ apply(FindNumeric, 2, anyNA) ]# Get column names with data that fails coercion
-  #if(any(FindNumeric[, -which(colnames(FindNumeric)==NonNumeric)]!=round(FindNumeric[, -which(colnames(FindNumeric)==NonNumeric)])))
-  if(any(x!=round(x))) {
-    return(TRUE)
-  } else {
-    return(FALSE)
-  }
-} 
+check_numeric_vector <- function(x) {
+  x <- x[!is.na(x)]
+  return(all(grepl("^[0-9\\.]{1,}$",x)))
+}
 
-chapter2_drop_type <- (chapter2, keep=c("continuous", "discrete")) {
+check_continuous <- function(x) {
+  continuous <- sapply(x, check_numeric)
+  numeric_cols <- which(continuous)
+  for (i in seq_along(numeric_cols)) {
+    local_vector <- x[,numeric_cols[i]]
+    local_vector <- local_vector[!is.na(local_vector)]
+    local_vector <- as.numeric(local_vector)
+    if(all(local_vector==round(local_vector))) {
+      continuous[numeric_cols[i]] <- FALSE
+    }
+  }
+  return(continuous)
+}
+
+
+chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
   keep_continuous <- TRUE
   if(keep=="discrete") {
     keep_continuous <- FALSE
   }
 
-  column_check <- apply(chapter2$data, 2, check_continuous)
+  column_checks <- check_continuous(chapter2$data)
   if(!keep_continuous) {
     column_check <- !column_check
   }
@@ -102,9 +111,17 @@ chapter2_drop_type <- (chapter2, keep=c("continuous", "discrete")) {
   return(chapter2)
 }
 
-chapter2_fitContinuous <- function(chapter2, TraitCols, models=c("BM","OU","EB","trend","lambda","kappa","delta","drift","white")){
+chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","lambda","kappa","delta","drift","white"), ncores=NULL){
+  ContDat <- chapter2_drop_type(chapter2, keep="continuous")
   fitContinuousResList <- list()
-  for(i in 1:length(models)){
-
+  for(model_index in seq_along(models)){
+    for (char_index in sequence(ncol(chapter2$data))) {
+      sliced_data <- chapter2
+      sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
+      sliced_data$data <- sliced_data$data[!is.na(sliced_data$data)]
+      sliced_data <- geiger::treedata(sliced_data$phy, sliced_data$data, sort=TRUE, warnings=FALSE)
+      fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data$phy, data = sliced_data$data, model = models[model_index], ncores=ncores)
+    }
   }
+  return(fitContinuousResList)
 }
