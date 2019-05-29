@@ -33,10 +33,10 @@ match_data <- function(tree, data, warnings = FALSE) {
   else {
     data.names <- rownames(data)
   }
-  nc <- geiger::name.check(phy, data)
+  nc <- geiger::name.check(tree, data)
   if (is.na(nc[[1]][1]) | nc[[1]][1] != "OK") {
     if (length(nc[[1]] != 0)) {
-      phy = ape::drop.tip(phy, as.character(nc[[1]]))
+      phy = ape::drop.tip(tree, as.character(nc[[1]]))
       if (warnings) {
         warning(paste("The following tips were not found in 'data' and were dropped from 'phy':\n\t",
                       paste(nc[[1]], collapse = "\n\t"), sep = ""))
@@ -52,16 +52,16 @@ match_data <- function(tree, data, warnings = FALSE) {
       }
     }
   }
-  order <- match(data.names, phy$tip.label)
-  rownames(data) <- phy$tip.label[order]
+  order <- match(data.names, tree$tip.label)
+  rownames(data) <- tree$tip.label[order]
 
-  index <- match(phy$tip.label, rownames(data))
+  index <- match(tree$tip.label, rownames(data))
   data <- as.data.frame(data[index, ], stringsAsFactors=FALSE)
   if (dm == 2) {
     data <- as.data.frame(data, stringsAsFactors=FALSE)
   }
-  phy$node.label = NULL
-  MatchReturn<-list(phy = phy, data = data)
+  tree$node.label = NULL
+  MatchReturn<-list(phy = tree, data = data)
   class(MatchReturn)<-c("list","chapter2")
   return(MatchReturn)
 }
@@ -72,16 +72,28 @@ match_data <- function(tree, data, warnings = FALSE) {
 #' Many of the packages authored by Jeremy Beaulieu with collaborators have the first column used to hold taxon names rather than store them as row names. Bless his heart. This converts a chapter2 object, which has its data with taxon names as row names, into having a data object internally with a column for taxon names.
 #'
 #' @param chapter2 The chapter2 object
+#' @export
 #' @return a list of two objects, phy and data, with the data in the format preferred by Beaulieu
 chapter2_convert_to_Beaulieu_data <- function(chapter2) {
   return(list(phy=chapter2$phy, data=cbind.data.frame(taxa=rownames(match_data$data), chapter2$data[,1:ncol(chapter2$data)])))
 }
 
+#' Check a vector to see if the elements are numeric
+#'
+#' @param x Vector of class whatever
+#' @return A boolean on whether the elements, other than NAs, are numeric
 check_numeric_vector <- function(x) {
   x <- x[!is.na(x)]
   return(all(grepl("^[0-9\\.]{1,}$",x)))
 }
 
+#' Check a data.frame to see which columns are continuous
+#'
+#' Continuous columns are not integers or have letters. They may have NAs
+#'
+#' @param x data.frame of traits
+#' @return A vector of booleans
+#' @export
 check_continuous <- function(x) {
   continuous <- sapply(x, check_numeric)
   numeric_cols <- which(continuous)
@@ -96,7 +108,12 @@ check_continuous <- function(x) {
   return(continuous)
 }
 
-
+#' Return a chapter2 object with only the selected kind of traits
+#'
+#' @param chapter2 a chapter2 class object, with tree and data
+#' @param keep Whether you want to keep continuous or discrete data
+#' @return A chapter2 object with the tree and only the chosen kind of data
+#' @export
 chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
   keep_continuous <- TRUE
   if(keep=="discrete") {
@@ -111,16 +128,32 @@ chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
   return(chapter2)
 }
 
+#' Try geiger's fitContinuous on all the continuous datasets using all geiger models
+#'
+#' Note that this ignores SE at the moment. If a character is missing information for a taxon, that taxon is deleted for JUST THAT CHARACTER ONLY.
+#'
+#' @param chapter2 a chapter2 class object, with tree and data
+#' @param models which models to use
+#' @param ncores how many cores to use; if NULL, detects automatically
+#' @returns A two dimensional list. The the first dimension is model, the second is character
+#' @export
+#' @examples
+#' data(geospiza,package="geiger")
+#' chapter2 <- match_data(geospiza$phy, geospiza$dat)
+#' results <- chapter2_fitContinuous(chapter2)
+#' # Look at model for OU for character 1
+#' print(summary(results[["OU"]][[1]]))
 chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","lambda","kappa","delta","drift","white"), ncores=NULL){
   ContDat <- chapter2_drop_type(chapter2, keep="continuous")
   fitContinuousResList <- list()
   for(model_index in seq_along(models)){
-    for (char_index in sequence(ncol(chapter2$data))) {
-      sliced_data <- chapter2
+    for (char_index in sequence(ncol(ContDat))) {
+      sliced_data <- ContDat
       sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
+      names(sliced_data$data) <- rownames(sliced_data$data)
       sliced_data$data <- sliced_data$data[!is.na(sliced_data$data)]
-      sliced_data <- geiger::treedata(sliced_data$phy, sliced_data$data, sort=TRUE, warnings=FALSE)
-      fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data$phy, data = sliced_data$data, model = models[model_index], ncores=ncores)
+      sliced_data <- match_data(sliced_data$phy, sliced_data$data)
+      fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data$phy, dat = sliced_data$data, model = models[model_index], ncores=ncores)
     }
   }
   return(fitContinuousResList)
