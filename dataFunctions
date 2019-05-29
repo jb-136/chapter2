@@ -15,8 +15,8 @@ gbif_clade_query <- function (query, rank){
   return(dat)
 }
 
+# e.g. gbif_clade_query("fagales", "class")
 
-species <- c("Puma concolor", "Myrmecocystus mexicanus", "Ursus arctos")
 
 #' Query gbif to return latitude and longitude for a vector of species
 #'
@@ -25,14 +25,13 @@ species <- c("Puma concolor", "Myrmecocystus mexicanus", "Ursus arctos")
 #' @export
 
 gbif_species_query <- function (species){
-all.records <- data.frame()
-for (species_index in seq_along(species)) {
-all.records <- plyr::rbind.fill(all.records, rgbif::occ_search(scientificName = species[species_index], fields="minimal", limit = 300)$data)
+  all.records <- data.frame()
+  for (species_index in seq_along(species)) {
+    all.records <- plyr::rbind.fill(all.records, rgbif::occ_search(scientificName = species[species_index], fields="minimal", limit = 300)$data)
+  }
+  return(all.records)
 }
-return(all.records)
-}
 
 
-
-
-gbif_clade_query("fagales", "class")
+# e.g.  species <- c("Puma concolor", "Myrmecocystus mexicanus", "Ursus arctos")
+# gbif_species_query(species=species)
