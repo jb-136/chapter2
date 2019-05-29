@@ -186,13 +186,23 @@ merging_trees_with_MRP <- function(
 	#####################################
 	# and then we do MRP
 	# or really just a basic parsimony search with phangorn
-	# and voilla, you'd get a tree sample you can do a strict consensus on, or whatever
+	#
+	# phangorn requires everything to be phyDat format
+	xx <- phyDat(mrp_full, type="USER", 
+		levels = 0:1,  ambiguity = "?")
+	#
+	# and now we can do parsimony
 	supertrees_out <- phangorn::pratchet(mrp_full, trace = 0)
+	#
 	# root the trees based on artificial outgroup
 	supertrees_out  <- lapply(supertrees_out , root, 
 		"placeholder_artificial_outgroup")
 	supertrees_out <- lapply(supertrees_out , drop.tip, 
 		"placeholder_artificial_outgroup")
+	#
+	# and voilla, you'd get a tree sample you can do
+		# a strict consensus on, or whatever
+	#
 	return(supertrees_out)
 	}
 
