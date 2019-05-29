@@ -1,5 +1,26 @@
 test_that("check_continuous works", {
-  expect_true(check_continuous(runif(5)))
-  expect_true(check_continuous(c(NA,runif(5))))
-  expect_false(check_continuous(round(c(NA,runif(5)))))
+  funky <- data.frame(
+    runif(3),
+    round(runif(3)),
+    as.character(runif(3)),
+    as.character(round(runif(3))),
+    c("a", "b", "3"),
+    c(NA, 1.4, 2.5),
+    c(NA, "a", "b"),
+    c(NA,4,5),
+    stringsAsFactors=FALSE)
+  funky[,1] <- as.numeric(funky[,1])
+  funky[,2] <- as.numeric(funky[,2])
+  funky[,6] <- as.numeric(funky[,6])
+  colnames(funky) <- NULL
+  expect_true(all(check_continuous(funky)[c(1,3,6)]))
+
+})
+
+test_that("chapter2_fitContinuous works", {
+  data(geospiza, package="geiger")
+  geospiza$dat[4,3] <- NA
+  chapter2 <- match_data(geospiza$phy, geospiza$dat)
+  fc_result <- chapter2_fitContinuous(chapter2)
+
 })
