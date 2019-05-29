@@ -35,7 +35,7 @@ match_data <- function(tree, data, warnings = FALSE) {
   nc <- geiger::name.check(tree, data)
   if (is.na(nc[[1]][1]) | nc[[1]][1] != "OK") {
     if (length(nc[[1]] != 0)) {
-      phy = ape::drop.tip(tree, as.character(nc[[1]]))
+      tree <- ape::drop.tip(tree, as.character(nc[[1]]))
       if (warnings) {
         warning(paste("The following tips were not found in 'data' and were dropped from 'phy':\n\t",
                       paste(nc[[1]], collapse = "\n\t"), sep = ""))
@@ -60,7 +60,6 @@ match_data <- function(tree, data, warnings = FALSE) {
   if (dm == 2) {
     data <- as.data.frame(data, stringsAsFactors=FALSE)
   }
-  tree$node.label = NULL
   MatchReturn<-list(phy = tree, data = data)
   class(MatchReturn)<-c("list","chapter2")
   return(MatchReturn)
@@ -130,31 +129,58 @@ chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
 
 #' Try geiger's fitContinuous on all the continuous datasets using all geiger models
 #'
-#' Note that this ignores SE at the moment. If a character is missing information for a taxon, that taxon is deleted for JUST THAT CHARACTER ONLY.
+#' Note that this ignores SE at the moment. If a character is missing information for a taxon, that taxon is deleted for just that character only.
 #'
 #' @param chapter2 a chapter2 class object, with tree and data
 #' @param models which models to use
 #' @param ncores how many cores to use; if NULL, detects automatically
-#' @returns A two dimensional list. The the first dimension is model, the second is character
+#' @returns A two dimensional list. The first dimension is model, the second is character
 #' @export
 #' @examples
 #' data(geospiza,package="geiger")
 #' chapter2 <- match_data(geospiza$phy, geospiza$dat)
 #' results <- chapter2_fitContinuous(chapter2)
 #' # Look at model for OU for character 1
-#' print(summary(results[["OU"]][[1]]))
+#' print(results[["OU"]][["wingL"]])
 chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","lambda","kappa","delta","drift","white"), ncores=NULL){
   ContDat <- chapter2_drop_type(chapter2, keep="continuous")
+  if(is.null(colnames(ContDat$data))) {
+    colnames(ContDat$data) <- paste0("continuous", sequence(ncol(ContDat$data)))
+  }
   fitContinuousResList <- list()
   for(model_index in seq_along(models)){
     for (char_index in sequence(ncol(ContDat$data))) {
       sliced_data <- ContDat
       sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
-      names(sliced_data$data) <- rownames(sliced_data$data)
+      names(sliced_data$data) <- rownames(ContDat$data)
       sliced_data$data <- sliced_data$data[!is.na(sliced_data$data)]
-      sliced_data <- match_data(sliced_data$phy, sliced_data$data)
-      fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data$phy, dat = sliced_data$data, model = models[model_index], ncores=ncores)
+      sliced_data_cleaned <- match_data(sliced_data$phy, sliced_data$data)
+      fitContinuousResList[[models[model_index]]][[colnames(ContDat$data)[char_index]]] <- geiger::fitContinuous(phy = sliced_data_cleaned$phy, dat = sliced_data_cleaned$data, model = models[model_index], ncores=ncores)
     }
   }
   return(fitContinuousResList)
+}
+
+#' Try geiger's fitContinuous on their discrete datasets using all geiger models
+#'
+#' @param chapter2 a chapter2 class object, with tree and datasets
+#' @param models which models to used
+#' @param ncores how many cores to use; if NULL, detects automatically
+#' @returns A two dimensio list. The first dimension is model, the second is character
+#' @export
+
+chapter2_fitDiscrete <- function (chapter2, models = c("ER","SYM","ARD","meristic"), ncores=NULL){
+  DiscDat<-chapter2_drop_type(chapter2, keep="discrete")
+  fitDiscreteResList <- list()
+  for (model_index in seq_along(models)){
+    for (char_index in sequence(ncol(DiscDat$data))) {
+      sliced_data <- DiscDat
+      sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
+      names(sliced_data$data) <- rownames(DiscDat$data)
+      sliced_data$data <- sliced_data$data[!is.na(sliced_data$data)]
+      sliced_data_cleaned <- match_data(sliced_data$phy, sliced_data$data)
+      fitDiscreteResList[[models[model_index]]][[char_index]]<-geiger::fitDiscrete(phy = sliced_data_cleaned$phy, dat = sliced_data_cleaned$data, model = models[model_index], ncores = ncores)
+    }
+  }
+  return(fitDiscreteResList)
 }
