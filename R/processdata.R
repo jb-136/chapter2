@@ -29,8 +29,7 @@ match_data <- function(tree, data, warnings = FALSE) {
   }
   if (is.null(rownames(data))) {
     stop("names for 'data' must be supplied")
-  }
-  else {
+  } else {
     data.names <- rownames(data)
   }
   nc <- geiger::name.check(tree, data)
@@ -56,6 +55,7 @@ match_data <- function(tree, data, warnings = FALSE) {
   rownames(data) <- tree$tip.label[order]
 
   index <- match(tree$tip.label, rownames(data))
+  index <- index[!is.na(index)]
   data <- as.data.frame(data[index, ], stringsAsFactors=FALSE)
   if (dm == 2) {
     data <- as.data.frame(data, stringsAsFactors=FALSE)
@@ -95,7 +95,7 @@ check_numeric_vector <- function(x) {
 #' @return A vector of booleans
 #' @export
 check_continuous <- function(x) {
-  continuous <- sapply(x, check_numeric)
+  continuous <- sapply(x, check_numeric_vector)
   numeric_cols <- which(continuous)
   for (i in seq_along(numeric_cols)) {
     local_vector <- x[,numeric_cols[i]]
@@ -120,7 +120,7 @@ chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
     keep_continuous <- FALSE
   }
 
-  column_checks <- check_continuous(chapter2$data)
+  column_check <- check_continuous(chapter2$data)
   if(!keep_continuous) {
     column_check <- !column_check
   }
@@ -147,7 +147,7 @@ chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","la
   ContDat <- chapter2_drop_type(chapter2, keep="continuous")
   fitContinuousResList <- list()
   for(model_index in seq_along(models)){
-    for (char_index in sequence(ncol(ContDat))) {
+    for (char_index in sequence(ncol(ContDat$data))) {
       sliced_data <- ContDat
       sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
       names(sliced_data$data) <- rownames(sliced_data$data)

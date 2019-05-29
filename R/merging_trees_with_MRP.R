@@ -4,7 +4,8 @@
 
 merging_trees_with_MRP <- function(
 		tree_backbone, tree_secondary, 
-		backbone_reweighting = 1){
+		backbone_reweighting = 1,
+		trace = 0){
 	###############################
 	# remove branch lengths
 	tree_backbone$edge.length <- NULL
@@ -182,6 +183,7 @@ merging_trees_with_MRP <- function(
 	# replace row and col names
 	rownames(mrp_full) <- new_mrp_rownames
 	colnames(mrp_full) <- new_mrp_colnames
+	#print(dim(mrp_full))
 	#
 	#####################################
 	# and then we do MRP
@@ -192,7 +194,7 @@ merging_trees_with_MRP <- function(
 		levels = 0:1,  ambiguity = "?")
 	#
 	# and now we can do parsimony
-	supertrees_out <- phangorn::pratchet(mrp_phyDat, trace = 0)
+	supertrees_out <- phangorn::pratchet(mrp_phyDat, trace = trace)
 	#
 	# root the trees based on artificial outgroup
 	supertrees_out  <- lapply(supertrees_out , root, 

@@ -23,8 +23,15 @@ tree_secondary <- paleotree::makePBDBtaxonTree(
      method = "parentChild"
      )
 
+
+Ntip(tree_backbone)
+Ntip(tree_secondary)
+Nnode(tree_backbone)
+Nnode(tree_secondary)
+
 source("merging_trees_with_MRP.R")
-mergedTrees <- merging_trees_with_MRP(tree_backbone, tree_secondary)
+mergedTrees <- merging_trees_with_MRP(
+	tree_backbone, tree_secondary, trace=1)
 
 # then get the strict consensus?
 
