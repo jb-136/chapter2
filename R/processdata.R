@@ -150,11 +150,15 @@ chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","la
     for (char_index in sequence(ncol(ContDat$data))) {
       sliced_data <- ContDat
       sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
-      names(sliced_data$data) <- rownames(sliced_data$data)
+      names(sliced_data$data) <- rownames(ContDat$data)
       sliced_data$data <- sliced_data$data[!is.na(sliced_data$data)]
-      sliced_data <- match_data(sliced_data$phy, sliced_data$data)
-      fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data$phy, dat = sliced_data$data, model = models[model_index], ncores=ncores)
+      sliced_data_cleaned <- match_data(sliced_data$phy, sliced_data$data)
+      fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data_cleaned$phy, dat = sliced_data_cleaned$data, model = models[model_index], ncores=ncores)
     }
   }
   return(fitContinuousResList)
 }
+
+#' Try geiger's fitContinuous on their discrete datasets using all geiger models
+#'
+#' '
