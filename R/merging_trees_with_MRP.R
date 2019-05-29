@@ -188,11 +188,11 @@ merging_trees_with_MRP <- function(
 	# or really just a basic parsimony search with phangorn
 	#
 	# phangorn requires everything to be phyDat format
-	xx <- phyDat(mrp_full, type="USER", 
+	mrp_phyDat <- phangorn::phyDat(mrp_full, type="USER", 
 		levels = 0:1,  ambiguity = "?")
 	#
 	# and now we can do parsimony
-	supertrees_out <- phangorn::pratchet(mrp_full, trace = 0)
+	supertrees_out <- phangorn::pratchet(mrp_phyDat, trace = 0)
 	#
 	# root the trees based on artificial outgroup
 	supertrees_out  <- lapply(supertrees_out , root, 
@@ -206,31 +206,3 @@ merging_trees_with_MRP <- function(
 	return(supertrees_out)
 	}
 
-
-
-# mergingTreesWithMRP
-devtools::install_github("phylotastic/datelife")
-devtools::install_github("dwbapst/paleotree", ref="developmentBranch")
-# not sure its necessary to load these packages really
-# library(datelife)
-# library(paleotree)
-# probably necessary to load ape though
-library(ape)
-
-# to test with otol Fagales tree
-dq <- datelife::make_datelife_query("fagales", 
-	get_spp_from_taxon = TRUE)
-tree_backbone<- datelife::get_otol_synthetic_tree(dq$cleaned_names,
-	ott_ids = dq$ott_ids)
-# and with Fagales PBDB taxon tree
-faData <- paleotree::getCladeTaxaPBDB("Fagales")
-# make the taxon tree
-tree_secondary <- paleotree::makePBDBtaxonTree(
-     taxaDataPBDB = faData,
-     rankTaxon = "species",
-     method = "parentChild"
-     )
-
-mergedTree <- merging_trees_with_MRP(tree_backbone, tree_secondary)
-
-# then get the strict consensus?
