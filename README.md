@@ -1,9 +1,13 @@
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/bomeara/chapter2.svg?branch=master)](https://travis-ci.org/bomeara/chapter2)
+<!-- badges: end -->
+
 # chapter2
 Project to quickly provide an overview of a clade, as a starting point for human-driven analysis.
 
 This is inspired by projects such as Rod Page's iSpecies or the Sanderson et al.'s phylota, as well as by the issues we frequently see in students first learning about phylogenetics.
 
-If it works, someone can just ask for a report on a clade, and it will give info on diversity, location, phylogeny, conservation status, research on it, funding for its study, and conclusions from models (is it diversifying particularly fast, what traits correlate with each other, what is its climate envelope, etc.). Basically, automatically write a (bad, dull) article on a clade's evolution and ecology. 
+If it works, someone can just ask for a report on a clade, and it will give info on diversity, location, phylogeny, conservation status, research on it, funding for its study, and conclusions from models (is it diversifying particularly fast, what traits correlate with each other, what is its climate envelope, etc.). Basically, automatically write a (bad, dull) article on a clade's evolution and ecology.
 
 This is for our lab's latest hackathon on May 29, 2019.
 
