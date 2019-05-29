@@ -78,12 +78,15 @@ chapter2_convert_to_Beaulieu_data <- function(chapter2) {
 }
 
 check_continuous <- function(x) {
+  FindNumeric <- apply(x, 2, as.numeric)# find numeric columns via coercion
+  NonNumeric <- colnames(FindNumeric)[ apply(FindNumeric, 2, anyNA) ]# Get column names with data that fails coercion
+  #if(any(FindNumeric[, -which(colnames(FindNumeric)==NonNumeric)]!=round(FindNumeric[, -which(colnames(FindNumeric)==NonNumeric)])))
   if(any(x!=round(x))) {
     return(TRUE)
   } else {
     return(FALSE)
   }
-}
+} 
 
 chapter2_drop_type <- (chapter2, keep=c("continuous", "discrete")) {
   keep_continuous <- TRUE
@@ -97,4 +100,11 @@ chapter2_drop_type <- (chapter2, keep=c("continuous", "discrete")) {
   }
   chapter2$data  <- chapter2$data[, column_check, drop=FALSE]
   return(chapter2)
+}
+
+chapter2_fitContinuous <- function(chapter2, TraitCols, models=c("BM","OU","EB","trend","lambda","kappa","delta","drift","white")){
+  fitContinuousResList <- list()
+  for(i in 1:length(models)){
+
+  }
 }
