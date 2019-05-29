@@ -29,10 +29,15 @@ merging_trees_with_MRP <- function(
 	# 
 	# append a vector of NAs if either tree lacks node labels
 	# cannot have trees lacking $node.label
-	# we can use datelife::tre_add_nodelabels (it only adds names to unnamed nodes --using a prefix and a consecutive number-- and generates a vector of names if there is no $node.label)
-	tree_backbone<- datelife::tree_add_nodelabels(tree_backbone, node_prefix = "unnamed_mrp_backbone")
-	tree_secondary<- datelife::tree_add_nodelabels(tree_secondary, node_prefix = "unnamed_mrp_secondary")
-	# but what you do here works exactly the same
+	# we can use datelife::tre_add_nodelabels 
+		# it only adds names to unnamed nodes 
+		# (using a prefix and a consecutive number)
+		# and generates a vector of names if there is no $node.label
+		#
+		# tree_backbone<- datelife::tree_add_nodelabels(tree_backbone, node_prefix = "unnamed_mrp_backbone")
+		# tree_secondary<- datelife::tree_add_nodelabels(tree_secondary, node_prefix = "unnamed_mrp_secondary")
+		#
+		# but what you do here works exactly the same
 	if(is.null(tree_backbone$node.label)) {
 		tree_backbone$node.label <- rep(NA, Nnode(tree_backbone))
 		}
