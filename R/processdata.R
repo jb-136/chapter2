@@ -33,10 +33,10 @@ match_data <- function(tree, data, warnings = FALSE) {
   else {
     data.names <- rownames(data)
   }
-  nc <- geiger::name.check(phy, data)
+  nc <- geiger::name.check(tree, data)
   if (is.na(nc[[1]][1]) | nc[[1]][1] != "OK") {
     if (length(nc[[1]] != 0)) {
-      phy = ape::drop.tip(phy, as.character(nc[[1]]))
+      phy = ape::drop.tip(tree, as.character(nc[[1]]))
       if (warnings) {
         warning(paste("The following tips were not found in 'data' and were dropped from 'phy':\n\t",
                       paste(nc[[1]], collapse = "\n\t"), sep = ""))
@@ -52,16 +52,16 @@ match_data <- function(tree, data, warnings = FALSE) {
       }
     }
   }
-  order <- match(data.names, phy$tip.label)
-  rownames(data) <- phy$tip.label[order]
+  order <- match(data.names, tree$tip.label)
+  rownames(data) <- tree$tip.label[order]
 
-  index <- match(phy$tip.label, rownames(data))
+  index <- match(tree$tip.label, rownames(data))
   data <- as.data.frame(data[index, ], stringsAsFactors=FALSE)
   if (dm == 2) {
     data <- as.data.frame(data, stringsAsFactors=FALSE)
   }
-  phy$node.label = NULL
-  MatchReturn<-list(phy = phy, data = data)
+  tree$node.label = NULL
+  MatchReturn<-list(phy = tree, data = data)
   class(MatchReturn)<-c("list","chapter2")
   return(MatchReturn)
 }
@@ -137,6 +137,12 @@ chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
 #' @param ncores how many cores to use; if NULL, detects automatically
 #' @returns A two dimensional list. The the first dimension is model, the second is character
 #' @export
+#' @examples
+#' data(geospiza,package="geiger")
+#' chapter2 <- match_data(geospiza$phy, geospiza$dat)
+#' results <- chapter2_fitContinuous(chapter2)
+#' # Look at model for OU for character 1
+#' print(summary(results[["OU"]][[1]]))
 chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","lambda","kappa","delta","drift","white"), ncores=NULL){
   ContDat <- chapter2_drop_type(chapter2, keep="continuous")
   fitContinuousResList <- list()
@@ -146,7 +152,7 @@ chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","la
       sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
       names(sliced_data$data) <- rownames(sliced_data$data)
       sliced_data$data <- sliced_data$data[!is.na(sliced_data$data)]
-      sliced_data <- geiger::treedata(sliced_data$phy, sliced_data$data, sort=TRUE, warnings=FALSE)
+      sliced_data <- match_data(sliced_data$phy, sliced_data$data)
       fitContinuousResList[[models[model_index]]][[char_index]] <- geiger::fitContinuous(phy = sliced_data$phy, dat = sliced_data$data, model = models[model_index], ncores=ncores)
     }
   }
