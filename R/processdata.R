@@ -29,8 +29,7 @@ match_data <- function(tree, data, warnings = FALSE) {
   }
   if (is.null(rownames(data))) {
     stop("names for 'data' must be supplied")
-  }
-  else {
+  } else {
     data.names <- rownames(data)
   }
   nc <- geiger::name.check(tree, data)
@@ -56,6 +55,7 @@ match_data <- function(tree, data, warnings = FALSE) {
   rownames(data) <- tree$tip.label[order]
 
   index <- match(tree$tip.label, rownames(data))
+  index <- index[!is.na(index)]
   data <- as.data.frame(data[index, ], stringsAsFactors=FALSE)
   if (dm == 2) {
     data <- as.data.frame(data, stringsAsFactors=FALSE)
