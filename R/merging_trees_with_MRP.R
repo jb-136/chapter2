@@ -3,7 +3,7 @@
 # Authors: David Bapst and Luna Luisa Sanchez Reyes
 
 merging_trees_with_MRP <- function(
-		tree_backbone, tree_secondary, 
+		tree_backbone, tree_secondary,
 		backbone_reweighting = 1,
 		trace = 0){
 	###############################
@@ -22,14 +22,14 @@ merging_trees_with_MRP <- function(
 	class(outgroup)<-"phylo"
 	#
 	tree_backbone <- bind.tree(tree_backbone, outgroup)
-	tree_secondary <- bind.tree(tree_secondary, outgroup) 
+	tree_secondary <- bind.tree(tree_secondary, outgroup)
 	#############
-	# Make sure the trees have properly structured clade labels!! No missing! 
-	# 
+	# Make sure the trees have properly structured clade labels!! No missing!
+	#
 	# append a vector of NAs if either tree lacks node labels
 	# cannot have trees lacking $node.label
-	# we can use datelife::tre_add_nodelabels 
-		# it only adds names to unnamed nodes 
+	# we can use datelife::tre_add_nodelabels
+		# it only adds names to unnamed nodes
 		# (using a prefix and a consecutive number)
 		# and generates a vector of names if there is no $node.label
 		#
@@ -44,7 +44,7 @@ merging_trees_with_MRP <- function(
 		tree_secondary$node.label <- rep(NA, Nnode(tree_secondary))
 		}
 	#
-	# rename all unnamed clades in both      
+	# rename all unnamed clades in both
 	# otherwise we're gonna run into major issues
 	# count unnamed clades in tree_backbone
 	unnamed_backbone <- is.na(tree_backbone$node.label) | tree_backbone$node.label == ""
@@ -66,15 +66,15 @@ merging_trees_with_MRP <- function(
 			# each node is a column
 			# values should be 0/1
 	#
-	# easiest way to get parent-child info is always prop.part 
+	# easiest way to get parent-child info is always prop.part
 	#cool
-	tree_bb_proppart <- ape::prop.part(tree_backbone) 
-	mrp_backbone <- sapply(tree_bb_proppart, function(x){ 
+	tree_bb_proppart <- ape::prop.part(tree_backbone)
+	mrp_backbone <- sapply(tree_bb_proppart, function(x){
 		   member <- rep(0, Ntip(tree_backbone))
 		   member[x] <- 1
 		   return(member)
 	  }
-		) 
+		)
 	# relabel each column with the node label, if present
 	colnames(mrp_backbone) <- tree_backbone$node.label
 	# and label rows with taxon labels
@@ -98,24 +98,24 @@ merging_trees_with_MRP <- function(
 	# and the number of columns equal to the number of unique nodes
 	#
 	# use prop.part again
-	tree_sec_proppart <- ape::prop.part(tree_secondary) 
-	mrp_sec <- sapply(tree_sec_proppart, function(x){ 
+	tree_sec_proppart <- ape::prop.part(tree_secondary)
+	mrp_sec <- sapply(tree_sec_proppart, function(x){
 		   member <- rep(0, Ntip(tree_secondary))
 		   member[x] <- 1
 		   return(member)
 	  }
-		) 
+		)
 	# relabel each column with the node label, if present
 	colnames(mrp_sec) <- tree_secondary$node.label
 	rownames(mrp_sec) <- tree_secondary$tip.label
-	# 
+	#
 	# First, identify all matching columns (nodes)
 	matchingNodes <- match(colnames(mrp_sec), colnames(mrp_backbone))
 	# or identify all matching OTUs first (rows)
 	matchingOTUs <- match(rownames(mrp_sec), rownames(mrp_backbone))
 	#
-	# this will match nodes in sec that are in backbone 
-		# just wondering if for whatever reason tree_sec 
+	# this will match nodes in sec that are in backbone
+		# just wondering if for whatever reason tree_sec
 		# has more named nodes, will this be affected?)
 	# answer: no we should be fine
 		# we will always get back a response as long as the sec vector
@@ -135,12 +135,12 @@ merging_trees_with_MRP <- function(
 	#
 	# get the name vectors for rows and columns before proceeding
 	# need to make sure name vectors are right
-	new_mrp_rownames <- c(rownames(mrp_backbone), 
+	new_mrp_rownames <- c(rownames(mrp_backbone),
 	rownames(mrp_sec)[is.na(matchingOTUs)])
-	new_mrp_colnames <- c(colnames(mrp_backbone), 
+	new_mrp_colnames <- c(colnames(mrp_backbone),
 	colnames(mrp_sec)[is.na(matchingNodes)])
 	# make these new matrices
-	# 
+	#
 	# first new nodes, old OTUs
 	# make sure there are new nodes
 	if(n_new_nodes > 0){
@@ -149,7 +149,7 @@ merging_trees_with_MRP <- function(
 		# replace where there are matches
 		newNodes_oldOTUs [matchingOTUs[!is.na(matchingOTUs)],] <- mrp_sec[
 			!is.na(matchingOTUs), is.na(matchingNodes)
-			]    
+			]
 		# combine with mrp_backbone (left and right)
 		mrp_backbone <- cbind(mrp_backbone, newNodes_oldOTUs)
 		}
@@ -159,7 +159,7 @@ merging_trees_with_MRP <- function(
 	if(n_new_OTUs > 0){
 		# make fake matrices full of '?' for the old/new and new/old matrices
 		oldNodes_newOTUs <- matrix('?', n_new_OTUs, n_old_nodes)
-		# 
+		#
 		# replace where there are matches
 		oldNodes_newOTUs [, matchingNodes[!is.na(matchingNodes)]] <- mrp_sec[
 			is.na(matchingOTUs), !is.na(matchingNodes)
@@ -167,7 +167,7 @@ merging_trees_with_MRP <- function(
 		# now do the new/new matrix INSIDE this if statement
 		# need to make sure there are new OTUs and new nodes
 		if(n_new_OTUs > 0 & n_new_nodes > 0){
-			# now let's make the bottom-right quarter 
+			# now let's make the bottom-right quarter
 				# its the matrix with no 'matches'
 			newNodes_newOTUs <- mrp_sec[is.na(matchingOTUs),
 				is.na(matchingNodes)]
@@ -190,16 +190,16 @@ merging_trees_with_MRP <- function(
 	# or really just a basic parsimony search with phangorn
 	#
 	# phangorn requires everything to be phyDat format
-	mrp_phyDat <- phangorn::phyDat(mrp_full, type="USER", 
+	mrp_phyDat <- phangorn::phyDat(mrp_full, type="USER",
 		levels = 0:1,  ambiguity = "?")
 	#
 	# and now we can do parsimony
 	supertrees_out <- phangorn::pratchet(mrp_phyDat, trace = trace)
 	#
 	# root the trees based on artificial outgroup
-	supertrees_out  <- lapply(supertrees_out , root, 
+	supertrees_out  <- lapply(supertrees_out , root,
 		"placeholder_artificial_outgroup")
-	supertrees_out <- lapply(supertrees_out , drop.tip, 
+	supertrees_out <- lapply(supertrees_out , drop.tip,
 		"placeholder_artificial_outgroup")
 	#
 	# and voilla, you'd get a tree sample you can do
@@ -207,4 +207,3 @@ merging_trees_with_MRP <- function(
 	#
 	return(supertrees_out)
 	}
-

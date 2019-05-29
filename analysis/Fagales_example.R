@@ -30,6 +30,7 @@ Nnode(tree_backbone)
 Nnode(tree_secondary)
 
 source("merging_trees_with_MRP.R")
+source("~/chapter2/R/merging_trees_with_MRP.R")
 mergedTrees <- merging_trees_with_MRP(
 	tree_backbone, tree_secondary, trace=1)
 
