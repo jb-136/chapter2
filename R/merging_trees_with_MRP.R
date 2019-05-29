@@ -4,7 +4,7 @@
 
 merging_trees_with_MRP <- function(
 		tree_backbone, tree_secondary, 
-		backbone_weighting = 1){
+		backbone_reweighting = 1){
 	###############################
 	# remove branch lengths
 	tree_backbone$edge.length <- NULL
@@ -46,8 +46,8 @@ merging_trees_with_MRP <- function(
 	# rename all unnamed clades in both      
 	# otherwise we're gonna run into major issues
 	# count unnamed clades in tree_backbone
-	unnamed_backbone <- is.NA(tree_backbone$node.label) | tree_backbone$node.label == ""
-	unnamed_secondary <-  is.NA(tree_secondary$node.label) | tree_secondary$node.label == ""
+	unnamed_backbone <- is.na(tree_backbone$node.label) | tree_backbone$node.label == ""
+	unnamed_secondary <-  is.na(tree_secondary$node.label) | tree_secondary$node.label == ""
 	total_unnamed_nodes <- sum(unnamed_backbone) + sum(unnamed_secondary)
 	#
 	# give a number to each unnamed node
@@ -219,8 +219,8 @@ tree_secondary <- paleotree::makePBDBtaxonTree(
      taxaDataPBDB = faData,
      rankTaxon = "species",
      method = "parentChild"
-	 )
+     )
 
-
+mergedTree <- merging_trees_with_MRP(tree_backbone, tree_secondary)
 
 # then get the strict consensus?
