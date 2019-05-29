@@ -196,28 +196,20 @@ merging_trees_with_MRP <- function(
 	# and now we can do parsimony
 	supertrees_out <- phangorn::pratchet(mrp_phyDat, trace = trace)
 	#
-<<<<<<< HEAD
-	# root the trees based on artificial outgroup
-	supertrees_out  <- lapply(supertrees_out , root,
-		"placeholder_artificial_outgroup")
-	supertrees_out <- lapply(supertrees_out , drop.tip,
-		"placeholder_artificial_outgroup")
-=======
 	# is it one tree or more?
 		# root the trees based on artificial outgroup
 			#and remove artificial outgroup
 		# code modeled on phangorn's supertree functions
 	if (inherits(supertrees_out, "multiPhylo")) {
-		supertrees_out  <- lapply(supertrees_out , root, 
+		supertrees_out  <- lapply(supertrees_out , root,
 			"placeholder_artificial_outgroup")
-		supertrees_out <- lapply(supertrees_out , drop.tip, 
-			"placeholder_artificial_outgroup")	
+		supertrees_out <- lapply(supertrees_out , drop.tip,
+			"placeholder_artificial_outgroup")
         class(supertrees_out) <- "multiPhylo"
       }else{
         supertrees_out <- root(supertrees_out, "placeholder_artificial_outgroup")
         supertrees_out <- drop.tip(supertrees_out, "placeholder_artificial_outgroup")
       }
->>>>>>> 1383531775e0ac39652ce5edb88a0798ec2b69bc
 	#
 	# and voilla, you'd get a tree sample you can do
 		# a strict consensus on, or whatever
