@@ -55,11 +55,11 @@ merging_trees_with_MRP <- function(
 	# give a number to each unnamed node
 	# labeled with 'unnamed_mrp_' just in case numbers somehow ended up as clade labels
 	tree_backbone$node.label[unnamed_backbone] <- paste0(
-		"unnamed_mrp_",
-	1:sum(unnamed_backbone)))
+		"unnamed_mrp_", 1:sum(unnamed_backbone)
+		)
 	tree_secondary$node.label[unnamed_secondary] <- paste0(
-		"unnamed_mrp_",
-	(sum(unnamed_backbone)+1):total_unnamed_nodes)
+		"unnamed_mrp_", (sum(unnamed_backbone)+1):total_unnamed_nodes
+		)
 	################
 	# first, tree_backbone
 			# for MRP we want a table
