@@ -15,12 +15,12 @@ chapter2_fitContinuous(chapter2, models = c("BM", "OU", "EB", "trend",
 \item{ncores}{how many cores to use; if NULL, detects automatically}
 }
 \description{
-Note that this ignores SE at the moment. If a character is missing information for a taxon, that taxon is deleted for JUST THAT CHARACTER ONLY.
+Note that this ignores SE at the moment. If a character is missing information for a taxon, that taxon is deleted for just that character only.
 }
 \examples{
 data(geospiza,package="geiger")
 chapter2 <- match_data(geospiza$phy, geospiza$dat)
 results <- chapter2_fitContinuous(chapter2)
 # Look at model for OU for character 1
-print(summary(results[["OU"]][[1]]))
+print(results[["OU"]][["wingL"]])
 }
