@@ -2,8 +2,6 @@
 # GPL v3
 # Authors: David Bapst and Luna Luisa Sanchez Reyes
 
-
-
 merging_trees_with_MRP <- function(
 		tree_backbone, tree_secondary, 
 		backbone_weighting = 1){
@@ -148,7 +146,7 @@ merging_trees_with_MRP <- function(
 		# make fake matrices full of '?' for the old/new and new/old matrices
 		newNodes_oldOTUs <- matrix('?', n_old_OTUs, n_new_nodes)
 		# replace where there are matches
-		newNodes_oldOTUs [matchingOTUs,] <- mrp_sec[
+		newNodes_oldOTUs [matchingOTUs[!is.na(matchingOTUs)],] <- mrp_sec[
 			!is.na(matchingOTUs), is.na(matchingNodes)
 			]    
 		# combine with mrp_backbone (left and right)
@@ -162,7 +160,7 @@ merging_trees_with_MRP <- function(
 		oldNodes_newOTUs <- matrix('?', n_new_OTUs, n_old_nodes)
 		# 
 		# replace where there are matches
-		oldNodes_newOTUs [, matchingNodes] <- mrp_sec[
+		oldNodes_newOTUs [, matchingNodes[!is.na(matchingNodes)]] <- mrp_sec[
 			is.na(matchingOTUs), !is.na(matchingNodes)
 			]
 		# now do the new/new matrix INSIDE this if statement
