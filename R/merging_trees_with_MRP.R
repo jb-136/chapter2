@@ -115,13 +115,19 @@ merging_trees_with_MRP <- function(
 	# or identify all matching OTUs first (rows)
 	matchingOTUs <- match(rownames(mrp_sec), rownames(mrp_backbone))
 	#
+	# this will match nodes in sec that are in backbone 
+		# just wondering if for whatever reason tree_sec 
+		# has more named nodes, will this be affected?)
+	# answer: no we should be fine
+		# we will always get back a response as long as the sec vector
+	#
 	# can see this as three matrices that need to be constructed
-	# in addition to the pre-existing backbone mrp matrix (top left)
-	# new nodes, old OTUs (the top right quater)
-	# new nodes , new OTUs (the 'diagonal', bottom right quarter)
-	# old nodes, new OTUs (the bottom left quater)
+		# in addition to the pre-existing backbone mrp matrix (top left)
+			# new nodes, old OTUs (the top right quater)
+			# new nodes , new OTUs (the 'diagonal', bottom right quarter)
+			# old nodes, new OTUs (the bottom left quater)
 	# the backbone mrp matrix won't be altered at all
-	# nothing gets added or removed from that
+		# nothing gets added or removed from that
 	# get dims for all of these
 	n_old_OTUs <-  nrow(mrp_backbone)
 	n_old_nodes <- ncol(mrp_backbone)
@@ -139,33 +145,39 @@ merging_trees_with_MRP <- function(
 	# first new nodes, old OTUs
 	# make sure there are new nodes
 	if(n_new_nodes > 0){
-	# make fake matrices full of '?' for the old/new and new/old matrices
-	newNodes_oldOTUs <- matrix('?', n_old_OTUs, n_new_nodes)
-	# replace where there are matches
-	newNodes_oldOTUs [matchingOTUs,] <- mrp_sec[!is.na(matchingOTUs), is.na(matchingNodes)]    
-	# combine with mrp_backbone (left and right)
-	mrp_backbone <- cbind(mrp_backbone, newNodes_oldOTUs)
+		# make fake matrices full of '?' for the old/new and new/old matrices
+		newNodes_oldOTUs <- matrix('?', n_old_OTUs, n_new_nodes)
+		# replace where there are matches
+		newNodes_oldOTUs [matchingOTUs,] <- mrp_sec[
+			!is.na(matchingOTUs), is.na(matchingNodes)
+			]    
+		# combine with mrp_backbone (left and right)
+		mrp_backbone <- cbind(mrp_backbone, newNodes_oldOTUs)
 		}
 	#
 	# now old nodes, new OTUs
-	# make sure there are new OTUs
+		# make sure there are new OTUs
 	if(n_new_OTUs > 0){
 		# make fake matrices full of '?' for the old/new and new/old matrices
-	oldNodes_newOTUs <- matrix('?', n_new_OTUs, n_old_nodes)
-	# 
-	# replace where there are matches
-	oldNodes_newOTUs [, matchingNodes] <- mrp_sec[!is.na(matchingOTUs), is.na(matchingNodes)]
-	# now do the new/new matrix INSIDE this if statement
-	# need to make sure there are new OTUs and new nodes
-	if(n_new_OTUs > 0 & n_new_nodes > 0){
-	# now let's make the bottom-right quarter - its the matrix with no 'matches'
-	newNodes_newOTUs <- mrp_sec[is.na(matchingOTUs), is.na(matchingNodes)]
-	# combine left and right
-	oldNodes_newOTUs <- cbind(oldNodes_newOTUs, newNodes_newOTUs)
-	}
-	# combine, top and bottom
-	mrp_backbone <-rbind(mrp_backbone, oldNodes_newOTUs)
-	}
+		oldNodes_newOTUs <- matrix('?', n_new_OTUs, n_old_nodes)
+		# 
+		# replace where there are matches
+		oldNodes_newOTUs [, matchingNodes] <- mrp_sec[
+			is.na(matchingOTUs), !is.na(matchingNodes)
+			]
+		# now do the new/new matrix INSIDE this if statement
+		# need to make sure there are new OTUs and new nodes
+		if(n_new_OTUs > 0 & n_new_nodes > 0){
+			# now let's make the bottom-right quarter 
+				# its the matrix with no 'matches'
+			newNodes_newOTUs <- mrp_sec[is.na(matchingOTUs),
+				is.na(matchingNodes)]
+			# combine left and right
+			oldNodes_newOTUs <- cbind(oldNodes_newOTUs, newNodes_newOTUs)
+			}
+		# combine, top and bottom
+		mrp_backbone <-rbind(mrp_backbone, oldNodes_newOTUs)
+		}
 	#
 	mrp_full <- mrp_backbone
 	#
@@ -179,8 +191,10 @@ merging_trees_with_MRP <- function(
 	# and voilla, you'd get a tree sample you can do a strict consensus on, or whatever
 	supertrees_out <- phangorn::pratchet(mrp_full, trace = 0)
 	# root the trees based on artificial outgroup
-	supertrees_out  <- lapply(supertrees_out , root, "placeholder_artificial_outgroup")
-	supertrees_out <- lapply(supertrees_out , drop.tip, "placeholder_artificial_outgroup")
+	supertrees_out  <- lapply(supertrees_out , root, 
+		"placeholder_artificial_outgroup")
+	supertrees_out <- lapply(supertrees_out , drop.tip, 
+		"placeholder_artificial_outgroup")
 	return(supertrees_out)
 	}
 
