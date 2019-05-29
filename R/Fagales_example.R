@@ -2,6 +2,7 @@
 
 devtools::install_github("phylotastic/datelife")
 devtools::install_github("dwbapst/paleotree", ref="developmentBranch")
+
 # not sure its necessary to load these packages really
 # library(datelife)
 # library(paleotree)
@@ -23,6 +24,9 @@ tree_secondary <- paleotree::makePBDBtaxonTree(
      )
 
 source("merging_trees_with_MRP.R")
-mergedTree <- merging_trees_with_MRP(tree_backbone, tree_secondary)
+mergedTrees <- merging_trees_with_MRP(tree_backbone, tree_secondary)
 
 # then get the strict consensus?
+
+strictMerged <- consensus(mergedTrees, p = 1, check.labels = TRUE)
+plot(strictMerged)
