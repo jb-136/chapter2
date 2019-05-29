@@ -17,10 +17,10 @@ test_that("check_continuous works", {
 
 })
 
-test_that("chapter2_fitContinuous works", {
+test_that("chapter2_fitGeiger works", {
   data(geospiza, package="geiger")
   geospiza$dat[4,3] <- NA
   chapter2 <- match_data(geospiza$phy, geospiza$dat)
-  fc_result <- chapter2_fitContinuous(chapter2)
-
+  fc_result <- chapter2_fitGeiger(chapter2, keep="continuous")
+  expect_true(inherits(fc_result[[1]][[1]], "gfit"))
 })
