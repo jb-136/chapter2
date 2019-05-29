@@ -147,7 +147,7 @@ chapter2_fitContinuous <- function(chapter2, models=c("BM","OU","EB","trend","la
   ContDat <- chapter2_drop_type(chapter2, keep="continuous")
   fitContinuousResList <- list()
   for(model_index in seq_along(models)){
-    for (char_index in sequence(ncol(ContDat))) {
+    for (char_index in sequence(ncol(ContDat$data))) {
       sliced_data <- ContDat
       sliced_data$data <- sliced_data$data[,char_index, drop=TRUE]
       names(sliced_data$data) <- rownames(sliced_data$data)
