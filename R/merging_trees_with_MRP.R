@@ -8,54 +8,12 @@ merging_trees_with_MRP <- function(
 		reduce_collapse = TRUE,
 		trace = 0){
 	###############################
-	
-	
-	
-	
-	##########################
 	# add an artificial outgroup to both trees
 		# this also removes any edge lengths
 	tree_backbone <- add_single_taxon_to_tree(tree = tree_backbone, 
 		new_tip_label = "placeholder_artificial_outgroup")
 	tree_secondary <- add_single_taxon_to_tree(tree = tree_secondary, 
-		new_tip_label = "placeholder_artificial_outgroup") 
-
-	
-	
-	add_single_taxon_to_tree <- function(tree, 
-			new_tip_label,
-			# default location to add tip is the root
-			nodeID = Ntip(tree) + 1
-			){
-		###############################
-		# currently only handles trees without branch lengths
-			# in fact the branch lengths will be removed from the input tree
-		# remove branch lengths
-		tree$edge.length <- NULL
-		#
-		# make an artificial 1 tip tree
-		one_tip_tree <- list(
-			edge = matrix(c(2,1),1,2),
-			tip.label = new_tip_label,
-			edge.length = NULL,
-			Nnode = 1)
-		# make it class phylo
-		class(one_tip_tree)<-"phylo"
-		#
-		tree <- bind.tree(
-			x = tree,
-			y = one_tip_tree,
-			where = nodeID
-			)
-		return(tree)
-		}
-		
-	
-
-	
-		}
-	
-	
+		new_tip_label = "placeholder_artificial_outgroup") 	
 	#############
 	# Make sure the trees have properly structured clade labels!! No missing!
 	#
@@ -258,7 +216,35 @@ merging_trees_with_MRP <- function(
 	#
 	return(supertrees_out)
 	}
-
+	
+	
+add_single_taxon_to_tree <- function(tree, 
+		new_tip_label,
+		# default location to add tip is the root
+		nodeID = Ntip(tree) + 1
+		){
+	###############################
+	# currently only handles trees without branch lengths
+		# in fact the branch lengths will be removed from the input tree
+	# remove branch lengths
+	tree$edge.length <- NULL
+	#
+	# make an artificial 1 tip tree
+	one_tip_tree <- list(
+		edge = matrix(c(2,1),1,2),
+		tip.label = new_tip_label,
+		edge.length = NULL,
+		Nnode = 1)
+	# make it class phylo
+	class(one_tip_tree)<-"phylo"
+	#
+	tree <- bind.tree(
+		x = tree,
+		y = one_tip_tree,
+		where = nodeID
+		)
+	return(tree)
+	}
 
 
 parsimony_search_clade_collapse <- function(
@@ -341,9 +327,6 @@ parsimony_search_clade_collapse <- function(
 	}
 
 
-
-
-
 expand_collapsed_clades_post_pratchet<-function(
 		tree, saved_sets, expected_num_OTUs
 		){
@@ -368,23 +351,39 @@ expand_collapsed_clades_post_pratchet<-function(
 		if(mom_nodes[1] != mom_nodes[2]){
 			tree <- collapse_all_nodes_between(
 				tree = tree, tip_labels = tip_names)
-			# reidentify which tips are to be replaced
+			}
+		###########
+		# now let's add in all labels we removed as new descendants of the mom node
+		tips_to_add <- saved_sets[i]
+		#
+		for(j in 1:length(tips_to_add)){
+			# every cycle, need to reidentify which tips are to be replaced
 			whichReplace <- sapply(tree$tip.label,function(x)
 				any(x == tip_names))
 			whichReplace <- which(whichReplace)		
+			# get the mom node
+			mom_node <- (tree$edge[match(whichReplace, tree$edge[,2]),1])[1]
 			#
-			mom_nodes <- tree$edge[match(whichReplace, tree$edge[,2]),1]
+			tree <- add_single_taxon_to_tree(tree= tree, 
+				new_tip_label = tips_to_add[j],
+				# default location to add tip is the root
+				nodeID = Ntip(tree) + 1
+				)
 			}
 		#
-		# now let's add in all labels we removed as new descendants of the mom node
-		mom_node <- mom_nodes[1]
-		
-		
-		
+		# drop the tips we don't want anymore
+		for(j in tip_names){
+			tree <- drop.tip(phy = tree, tip = j)
+			}
 		}
-		
 	# check that it has the correct number of taxa
-	
+	if(Ntip(tree) != expected_num_OTUs){
+		stop(
+			"Iterative collapsing & expansion of OTUs failed to produce a tree of the right number of OTUs"
+			)
+		}
+	#################
+	return(tree)
 	}
 
 
