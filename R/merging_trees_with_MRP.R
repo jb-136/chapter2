@@ -5,6 +5,7 @@
 merging_trees_with_MRP <- function(
 		tree_backbone, tree_secondary,
 		backbone_reweighting = 1,
+		reduce_collapse = TRUE,
 		trace = 0){
 	###############################
 	# remove branch lengths
@@ -80,14 +81,6 @@ merging_trees_with_MRP <- function(
 	# and label rows with taxon labels
 	rownames(mrp_backbone) <- tree_backbone$tip.label
 	#
-	################################
-	# reweight the representation in the backbone (so its higher than the secondary?
-	# nice!
-	if(backbone_reweighting > 1){
-		# repeat the columns in the backbone mrp X times, so that the same node is being
-	# considered as multiple characters (thus weighting those groups 'higher'
-	   mrp_backbone <- mrp_backbone[,]
-		}
 	##########################
 	# then take tree B, and code them as unknown if there is no matching label
 	# code them 0/1 for matching labels
@@ -100,10 +93,10 @@ merging_trees_with_MRP <- function(
 	# use prop.part again
 	tree_sec_proppart <- ape::prop.part(tree_secondary)
 	mrp_sec <- sapply(tree_sec_proppart, function(x){
-		   member <- rep(0, Ntip(tree_secondary))
-		   member[x] <- 1
-		   return(member)
-	  }
+			member <- rep(0, Ntip(tree_secondary))
+			member[x] <- 1
+			return(member)
+			}
 		)
 	# relabel each column with the node label, if present
 	colnames(mrp_sec) <- tree_secondary$node.label
@@ -185,30 +178,47 @@ merging_trees_with_MRP <- function(
 	colnames(mrp_full) <- new_mrp_colnames
 	#print(dim(mrp_full))
 	#
+	################################
+	# reweight the representation in the backbone (so its higher than the secondary?
+	# nice!
+	if(backbone_reweighting > 1){
+		# repeat the columns in the backbone mrp X times, so that the same node is being
+			# considered as multiple characters (thus weighting those groups 'higher'
+		newColumns <- rep(1:n_old_nodes,backbone_reweighting)
+		newColumns <- c(newColumns, (1+n_old_nodes):ncol(mrp_full))
+		mrp_full <- mrp_full[,newColumns]
+		# NOTE 
+		# this will repeat the old nodes many times, possibly including the membership
+			# of new OTUs in those old nodes, which wasn't in the backbone
+		# but if we weight the inclusion of new OTUs less
+				# then they will look like they belong to a sister group 
+				# or will appear paraphyletic to the taxa in the backbone tree
+		}
 	#####################################
 	# and then we do MRP
 	# or really just a basic parsimony search with phangorn
 	#
-	# phangorn requires everything to be phyDat format
-	mrp_phyDat <- phangorn::phyDat(mrp_full, type="USER",
-		levels = 0:1,  ambiguity = "?")
-	#
-	# and now we can do parsimony
-	supertrees_out <- phangorn::pratchet(mrp_phyDat, trace = trace)
+	supertrees_out <- parsimony_search_clade_collapse(
+		char_matrix = mrp_full,
+		levels = 0:1,  ambiguity = "?", trace = trace,
+		reduce_collapse = reduce_collapse
+		)
 	#
 	# is it one tree or more?
 		# root the trees based on artificial outgroup
 			#and remove artificial outgroup
 		# code modeled on phangorn's supertree functions
 	if (inherits(supertrees_out, "multiPhylo")) {
-		supertrees_out  <- lapply(supertrees_out , root,
+		supertrees_out  <- lapply(supertrees_out, root,
 			"placeholder_artificial_outgroup")
-		supertrees_out <- lapply(supertrees_out , drop.tip,
+		supertrees_out <- lapply(supertrees_out, drop.tip,
 			"placeholder_artificial_outgroup")
         class(supertrees_out) <- "multiPhylo"
       }else{
-        supertrees_out <- root(supertrees_out, "placeholder_artificial_outgroup")
-        supertrees_out <- drop.tip(supertrees_out, "placeholder_artificial_outgroup")
+        supertrees_out <- root(supertrees_out, 
+			"placeholder_artificial_outgroup")
+        supertrees_out <- drop.tip(supertrees_out, 
+			"placeholder_artificial_outgroup")
       }
 	#
 	# and voilla, you'd get a tree sample you can do
@@ -216,3 +226,217 @@ merging_trees_with_MRP <- function(
 	#
 	return(supertrees_out)
 	}
+
+
+
+parsimony_search_clade_collapse <- function(
+		char_matrix, 
+		levels,  ambiguity, trace,
+		reduce_collapse = TRUE
+		){
+	####################
+	#
+	if(reduce_collapse){
+		# identify sets of taxa that share the same coding
+		taxonSets <- apply(char_matrix, 1,function(x)
+			which(apply(char_matrix, 1,function(y)
+				identical(x,y)
+				))[1]
+			)
+		# count how many are repeated
+		nRepeats <- table(taxonSets)
+		if(any(nRepeats > 2)){
+			# remove all but two, rename with placeholders
+			collapse_these_sets <- names(nRepeats[nRepeats > 2])
+			# save information on the removed rows
+			saved_sets <- list()
+			matrix_modified <- char_matrix
+			for(i in 1:length(collapse_these_sets)){
+				rows_in_set <- which(taxonSets == collapse_these_sets[i])
+				set_OTU_labels <- rownames(char_matrix)[rows_in_set]
+				saved_sets[[i]] <- set_OTU_labels
+				# find the rows in the modified matrix
+					# use which so we can modify as vector
+				mod_rows_in_set <- which(sapply(rownames(matrix_modified),
+					function(x) any(x == set_OTU_labels)))
+				# remove all but two of the set
+					# dropping all but first two will not modify location of first two
+				matrix_modified <- matrix_modified[mod_rows_in_set[-(1:2)]
+				# new tip names
+				new_OTU_names <- paste0("placeholder_set_", collapse_these_sets[i])
+				new_OTU_names <- paste0(newOTUnames, "_", c("a", "b"))
+				rownames(matrix_modified)[mod_rows_in_set[1:2]] <- new_OTU_names				
+				}
+			names(saved_sets) <- paste0("placeholder_set_",collapse_these_sets)
+			matrix_final <- matrix_modified 
+		}else{
+			matrix_final <- char_matrix
+			reduce_collapse <- FALSE
+			}
+	}else{
+		matrix_final <- char_matrix
+		}
+	##############
+	# now do the pratchet
+	#
+	# phangorn requires everything to be phyDat format
+	mrp_phyDat <- phangorn::phyDat(matrix_final, type="USER",
+		levels = levels,  ambiguity = ambiguity)
+	#
+	# and now we can do parsimony
+	outTree <- phangorn::pratchet(mrp_phyDat, trace = trace)
+	#	
+	if(reduce_collapse){
+		# handle properly depending on if multi phylo or not
+		if (inherits(outTree, "multiPhylo")) {
+			outTree <- lapply(outTree,
+				expand_collapsed_clades_post_pratchet,
+				saved_sets = saved_sets, 
+				expected_num_OTUs = nrow(char_matrix)
+				)		
+			class(outTree) <- "multiPhylo"
+		}else{
+			outTree <- expand_collapsed_clades_post_pratchet(
+				tree = outTree, 
+				saved_sets = saved_sets, 
+				expected_num_OTUs = nrow(char_matrix)
+				)
+			}
+	}else{
+		res <- outTree
+		}
+	return(res)
+	}
+
+
+
+
+
+expand_collapsed_clades_post_pratchet<-function(
+		tree, saved_sets, expected_num_OTUs
+		){
+	############################################
+	# now replace each set in turn
+	for( i in 1:length(saved_sets)){
+		# get the set name
+		set_name <- names(saved_sets)[i]
+		# get the set name with addendums for the tips
+		tip_names <- paste0(set_name, "_", c("a", "b"))
+		# find the two tips with the corresponding name
+		whichReplace <- sapply(tree$tip.label,function(x)
+			any(x == tip_names))
+		whichReplace <- which(whichReplace)
+		# 
+		# if these tips are *somehow* not direct children of same mother node
+			# collapse all edges that are in their way
+		#
+		# do they have the same mom node?
+		mom_nodes <- tree$edge[match(whichReplace, tree$edge[,2]),1]
+		#
+		if(mom_nodes[1] != mom_nodes[2]){
+			tree <- collapse_all_nodes_between(tree, whichTips)
+			# reidentify which tips are to be replaced
+			whichReplace <- sapply(tree$tip.label,function(x)
+				any(x == tip_names))
+			whichReplace <- which(whichReplace)		
+			#
+			mom_nodes <- tree$edge[match(whichReplace, tree$edge[,2]),1]
+			}
+		#
+		# now let's add in all labels we removed as new descendants of the mom node
+		
+		
+		paleotree::collapseNodes 
+		}
+		
+	# check that it has the correct number of taxa
+	
+	}
+
+
+collapse_all_nodes_between <- function(tree, tip_labels){
+	# identify tips based on labels
+	which_tips <- sapply(tree$tip.label,function(x)
+		any(x == tip_labels))
+	which_tips <- which(which_tips)
+	#
+	# first, find mom nodes
+	mom_nodes <- tree$edge[match(which_tips, tree$edge[,2]),1]
+	#
+	if(mom_nodes[1] == mom_nodes[2]){
+		stop("these tips already share the same direct mother node??")
+		}
+	########
+	
+	while(length(unshared_nodes) > 1 ){
+		# pick one at random
+		collapse_this_node <- unshared_nodes[1]
+		
+		tree <- paleotree::collapseNodes(
+			nodeID = collapse_this_node,
+			tree = tree,collapseType = "backward") 
+		
+		# remake unshared_nodes
+		unshared_nodes_new
+		# make sure the length of unshared_nodes changed
+		
+		# 
+		
+		}
+	
+
+	# find all nodes that aren't shared
+	unshared_nodes <- names(table(node_lineages))[table(node_lineages) == 1]
+	return(unshared_nodes)
+
+
+find_unshared_nodes <- function(tree, tip_labels){
+	# identify tips based on labels
+	which_tips <- sapply(tree$tip.label,function(x)
+		any(x == tip_labels))
+	which_tips <- which(which_tips)
+	#
+	# first, find mom nodes
+	mom_nodes <- tree$edge[match(which_tips, tree$edge[,2]),1]
+	#
+	# find all nodes leading up to each mom node
+	# make them into a single vector
+	node_lineages <- c(
+		get_node_lineage(node = mom_nodes[1], tree = tree),
+		get_node_lineage(node = mom_nodes[2], tree = tree)
+		)		
+	# find all nodes that aren't shared
+	unshared_nodes <- names(table(node_lineages))[table(node_lineages) == 1]
+	return(unshared_nodes)
+	}
+
+
+	
+	
+
+	###########
+	# check tree
+	# identify tips based on labels
+	which_tips <- sapply(tree$tip.label,function(x)
+		any(x == tip_labels))
+	which_tips <- which(which_tips)
+	# first, find mom nodes
+	mom_nodes <- tree$edge[match(which_tips, tree$edge[,2]),1]
+	#######
+	if(mom_nodes[1] != mom_nodes[2]){
+		stop("tips of interest are still not have common ancestor even after collapsing!")
+		}
+	########
+	return(tree)	
+	}
+
+
+get_node_lineage <- function(tree, node){
+	# find all nodes leading up to each mom node
+	lineage <- node
+	while(lineage[1] != (Ntip(tree) + 1){
+		mom_node <- tree$edge[tree$edge[,2] == lineage[1],1]
+		lineage <- c(mom_node, lineage)
+		}
+	return(lineage)
+	}	
