@@ -195,6 +195,16 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
 get_datelife_biggest <- function(taxon) {
   clade.name<- rotl::tnrs_match_names(taxon)$unique_name[1]
   datelife_biggest <- NULL
-  try(datelife_biggest <- datelife::datelife_search(input=clade.name, get_spp_from_taxon=TRUE, summary_format=phylo_biggest))
+  try(datelife_biggest <- datelife::datelife_search(input=clade.name, get_spp_from_taxon=TRUE, summary_format="phylo_biggest"))
   return(datelife_biggest)
+}
+
+#' Get Wikipedia summary
+#'
+#' @param taxon Clade of interest
+#' @return text string of summary of page
+#' @export
+get_wikipedia_summary <- function(taxon) {
+  URL <- paste0('https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles=', utils::URLencode(taxon))
+  return(jsonlite::fromJSON(URL)$query$pages[[1]]$extract)
 }
