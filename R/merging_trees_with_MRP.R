@@ -279,7 +279,7 @@ parsimony_search_clade_collapse <- function(
 					function(x) any(x == set_OTU_labels)))
 				# remove all but two of the set
 					# dropping all but first two will not modify location of first two
-				matrix_modified <- matrix_modified[mod_rows_in_set[-(1:2)]]
+				matrix_modified <- matrix_modified[-mod_rows_in_set[-(1:2)],]
 				# new tip names
 				new_OTU_names <- paste0("placeholder_set_", collapse_these_sets[i])
 				new_OTU_names <- paste0(new_OTU_names, "_", c("a", "b"))
