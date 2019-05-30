@@ -29,15 +29,22 @@ Nnode(tree_backbone)
 Ntip(tree_secondary)
 Nnode(tree_secondary)
 
-#source("merging_trees_with_MRP.R")
-#source("~/chapter2/R/merging_trees_with_MRP.R")
-
+source("~/chapter2/R/merging_trees_with_MRP.R")
 mergedTrees <- merging_trees_with_MRP(
-	tree_backbone, tree_secondary, trace=1)
+	tree_backbone, tree_secondary, 
+	reduce_collapse = TRUE,
+	trace=1)
+
+
+########################################################
+
 
 # then get the strict consensus?
 
 strictMerged <- consensus(mergedTrees, p = 1, check.labels = TRUE)
+
+
+
 plot(strictMerged)
 
 pdf("fagales_mrp_fan.pdf", height = 10)
