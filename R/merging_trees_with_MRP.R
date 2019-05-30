@@ -282,7 +282,7 @@ parsimony_search_clade_collapse <- function(
 				matrix_modified <- matrix_modified[mod_rows_in_set[-(1:2)]]
 				# new tip names
 				new_OTU_names <- paste0("placeholder_set_", collapse_these_sets[i])
-				new_OTU_names <- paste0(newOTUnames, "_", c("a", "b"))
+				new_OTU_names <- paste0(new_OTU_names, "_", c("a", "b"))
 				rownames(matrix_modified)[mod_rows_in_set[1:2]] <- new_OTU_names				
 				}
 			names(saved_sets) <- paste0("placeholder_set_",collapse_these_sets)
