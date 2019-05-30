@@ -14,14 +14,19 @@ merging_trees_with_MRP <- function(
 	
 	##########################
 	# add an artificial outgroup to both trees
-	
-	new_tip_label = "placeholder_artificial_outgroup"
-	
+		# this also removes any edge lengths
+	tree_backbone <- add_single_taxon_to_tree(tree = tree_backbone, 
+		new_tip_label = "placeholder_artificial_outgroup")
+	tree_secondary <- add_single_taxon_to_tree(tree = tree_secondary, 
+		new_tip_label = "placeholder_artificial_outgroup") 
+
 	
 	
 	add_single_taxon_to_tree <- function(tree, 
-			nodeID = Ntip(tree) + 1, 
-			new_tip_label){
+			new_tip_label,
+			# default location to add tip is the root
+			nodeID = Ntip(tree) + 1
+			){
 		###############################
 		# currently only handles trees without branch lengths
 			# in fact the branch lengths will be removed from the input tree
@@ -38,11 +43,13 @@ merging_trees_with_MRP <- function(
 		class(one_tip_tree)<-"phylo"
 		#
 		tree <- bind.tree(
-			
+			x = tree,
+			y = one_tip_tree,
+			where = nodeID
 			)
+		return(tree)
+		}
 		
-		tree_backbone <- bind.tree(tree_backbone, outgroup)
-		tree_secondary <- bind.tree(tree_secondary, outgroup)
 	
 
 	
