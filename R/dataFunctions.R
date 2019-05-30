@@ -186,3 +186,13 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
   pubmed.df <- data.frame(Date=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortpubdate")), FirstAuthor=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortfirstauthor")), Journal=rentrez::extract_from_esummary(pubmed.summaries, elements=c("fulljournalname")), Title=rentrez::extract_from_esummary(pubmed.summaries, elements=c("title")), row.names=NULL)
   return(list(count=pubmed.result$count,   recent.papers =   pubmed.df ))
 }
+
+#' Get biggest tree from datelife
+#'
+#' @param taxon Clade of interest
+#' @return phylo object
+#' @export
+get_datelife_biggest <- function(taxon) {
+  clade.name<- rotl::tnrs_match_names(taxon)$unique_name[1]
+  return(datelife::datelife_search(input=clade.name, get_spp_from_taxon=TRUE, summary_format=phylo_biggest))
+}
