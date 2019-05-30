@@ -275,8 +275,9 @@ parsimony_search_clade_collapse <- function(
 				saved_sets[[i]] <- set_OTU_labels
 				# find the rows in the modified matrix
 					# use which so we can modify as vector
-				mod_rows_in_set <- which(sapply(rownames(matrix_modified),
-					function(x) any(x == set_OTU_labels)))
+				mod_rows_in_set <- sapply(rownames(matrix_modified),
+					function(x) any(x == set_OTU_labels))
+				mod_rows_in_set <- which(mod_rows_in_set)
 				# remove all but two of the set
 					# dropping all but first two will not modify location of first two
 				matrix_modified <- matrix_modified[-mod_rows_in_set[-(1:2)],]
@@ -338,9 +339,16 @@ expand_collapsed_clades_post_pratchet<-function(
 		# get the set name with addendums for the tips
 		tip_names <- paste0(set_name, "_", c("a", "b"))
 		# find the two tips with the corresponding name
-		whichReplace <- sapply(tree$tip.label,function(x)
-			any(x == tip_names))
-		whichReplace <- which(whichReplace)
+		whichReplace <- match(tree$tip.label, tip_names)
+		whichReplace <- which(!is.na(whichReplace))
+		#
+		if(length(whichReplace)!=2){
+			stop("Cannot find the two tips to replace")
+			}
+		#
+		#whichReplace <- sapply(tree$tip.label,function(x)
+		#	any(x == tip_names))
+		#whichReplace <- which(whichReplace)
 		# 
 		# if these tips are *somehow* not direct children of same mother node
 			# collapse all edges that are in their way
