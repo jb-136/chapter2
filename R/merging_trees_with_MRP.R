@@ -308,14 +308,14 @@ parsimony_search_clade_collapse <- function(
 	if(reduce_collapse){
 		# handle properly depending on if multi phylo or not
 		if (inherits(outTree, "multiPhylo")) {
-			outTree <- lapply(outTree,
+			res <- lapply(outTree,
 				expand_collapsed_clades_post_pratchet,
 				saved_sets = saved_sets, 
 				expected_num_OTUs = nrow(char_matrix)
 				)		
-			class(outTree) <- "multiPhylo"
+			class(res) <- "multiPhylo"
 		}else{
-			outTree <- expand_collapsed_clades_post_pratchet(
+			res <- expand_collapsed_clades_post_pratchet(
 				tree = outTree, 
 				saved_sets = saved_sets, 
 				expected_num_OTUs = nrow(char_matrix)
@@ -423,7 +423,7 @@ collapse_all_nodes_between <- function(tree, tip_labels){
 	unshared_nodes <- find_unshared_nodes(
 		tree = tree, tip_labels = tip_labels)
 	#
-	while(length(unshared_nodes) > 1 ){
+	while(length(unshared_nodes) > 0 ){
 		# pick one at random
 		collapse_this_node <- unshared_nodes[1]
 		#
@@ -454,7 +454,6 @@ collapse_all_nodes_between <- function(tree, tip_labels){
 	if(mom_nodes[1] != mom_nodes[2]){
 		#print(tree);print(tip_labels);print(mom_nodes);print(tree$edge)
 		print(find_unshared_nodes(tree = tree, tip_labels = tip_labels))
-		get_node_lineage <- function(tree, node)
 		#
 		stop("tips of interest are still do not have common mother node even after collapsing!")
 		}
