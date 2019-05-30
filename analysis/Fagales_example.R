@@ -45,12 +45,12 @@ pdf_path <- paste0("~//chapter2//analysis/",
 
 
 pdf(file = pdf_path,
-	height = 30,
-	width = 3)
+	height = 100,
+	width = 4)
 plot(mergedTree,
-	cex=0.20,
+	cex=0.3,
 	show.tip.label = TRUE,
-	no.margin = FALSE)
+	no.margin = TRUE)
 dev.off()
 # need to use path expand to convert ~
 shell.exec(path.expand(pdf_path))
