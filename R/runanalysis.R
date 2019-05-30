@@ -2,6 +2,7 @@
 #'
 #' @param taxon Clade of interest
 #' @return A list with all output
+#' @export
 run_chapter2 <- function(taxon) {
   datelife_biggest <- get_datelife_biggest(taxon)
   pubmed <- get_pubmed(taxon)
