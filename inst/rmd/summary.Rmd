@@ -36,7 +36,7 @@ if(inherits(all_results$datelife_biggest, "phylo")) {
 } else {
   print("Datelife did not contain a tree")
 }
-
+```
 
 ## GenBank
 
