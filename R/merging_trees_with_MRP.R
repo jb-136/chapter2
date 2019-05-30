@@ -203,12 +203,15 @@ merging_trees_with_MRP <- function(
 			"placeholder_artificial_outgroup")
 		supertrees_out <- lapply(supertrees_out, drop.tip,
 			"placeholder_artificial_outgroup")
+		supertrees_out <- lapply(supertrees_out,
+			paleotree::cleanNewPhylo)
         class(supertrees_out) <- "multiPhylo"
       }else{
         supertrees_out <- root(supertrees_out, 
 			"placeholder_artificial_outgroup")
         supertrees_out <- drop.tip(supertrees_out, 
 			"placeholder_artificial_outgroup")
+		supertrees_out <- paleotree::cleanNewPhylo(supertrees_out)
       }
 	#
 	# and voilla, you'd get a tree sample you can do
@@ -453,7 +456,7 @@ collapse_all_nodes_between <- function(tree, tip_labels){
 	#
 	if(mom_nodes[1] != mom_nodes[2]){
 		#print(tree);print(tip_labels);print(mom_nodes);print(tree$edge)
-		print(find_unshared_nodes(tree = tree, tip_labels = tip_labels))
+		#print(find_unshared_nodes(tree = tree, tip_labels = tip_labels))
 		#
 		stop("tips of interest are still do not have common mother node even after collapsing!")
 		}
@@ -478,7 +481,7 @@ find_unshared_nodes <- function(tree, tip_labels){
 		get_node_lineage(node = mom_nodes[2], tree = tree)
 		)		
 	#
-	print(table(node_lineages))
+	#print(table(node_lineages))
 	#
 	# find all nodes that aren't shared
 	unshared_nodes <- names(table(node_lineages))[table(node_lineages) == 1]

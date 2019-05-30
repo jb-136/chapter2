@@ -29,11 +29,31 @@ Nnode(tree_backbone)
 Ntip(tree_secondary)
 Nnode(tree_secondary)
 
-source("~/chapter2/R/merging_trees_with_MRP.R")
-mergedTrees <- merging_trees_with_MRP(
+
+source("~//chapter2//R//merging_trees_with_MRP.R")
+mergedTree <- merging_trees_with_MRP(
 	tree_backbone, tree_secondary, 
 	reduce_collapse = TRUE,
 	trace=1)
+mergedTree
+
+
+pdf_path <- paste0("~//chapter2//analysis/",
+		"merged_Fagales_tree_",
+		format(Sys.time(), "%m-%d-%y"),
+		".pdf")
+
+
+pdf(file = pdf_path,
+	height = 30,
+	width = 3)
+plot(mergedTree,
+	cex=0.20,
+	show.tip.label = TRUE,
+	no.margin = FALSE)
+dev.off()
+# need to use path expand to convert ~
+shell.exec(path.expand(pdf_path))
 
 
 ########################################################
