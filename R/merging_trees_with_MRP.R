@@ -346,6 +346,9 @@ expand_collapsed_clades_post_pratchet<-function(
 			stop("Cannot find the two tips to replace")
 			}
 		#
+		# The following should work too but code is different
+			# to test for weird error impacting multiple parts of code
+		#
 		#whichReplace <- sapply(tree$tip.label,function(x)
 		#	any(x == tip_names))
 		#whichReplace <- which(whichReplace)
@@ -357,22 +360,30 @@ expand_collapsed_clades_post_pratchet<-function(
 		mom_nodes <- tree$edge[match(whichReplace, tree$edge[,2]),1]
 		#
 		if(mom_nodes[1] != mom_nodes[2]){
+			#print(tree);print(tip_names);print(mom_nodes)
+			#
 			tree <- collapse_all_nodes_between(
 				tree = tree, tip_labels = tip_names)
 			}
 		###########
 		# now let's add in all labels we removed as new descendants of the mom node
-		tips_to_add <- saved_sets[i]
+		tips_to_add <- saved_sets[[i]]
 		#
 		for(j in 1:length(tips_to_add)){
+			#print(Ntip(tree))
+			#print(tree$tip.label)
+			#print(tip_names)
+			#
 			# every cycle, need to reidentify which tips are to be replaced
-			whichReplace <- sapply(tree$tip.label,function(x)
-				any(x == tip_names))
+			whichReplace <- sapply(tree$tip.label,
+				function(x) any(x == tip_names))
+			#
 			whichReplace <- which(whichReplace)		
 			# get the mom node
 			mom_node <- (tree$edge[match(whichReplace, tree$edge[,2]),1])[1]
 			#
-			tree <- add_single_taxon_to_tree(tree= tree, 
+			tree <- add_single_taxon_to_tree(
+				tree= tree, 
 				new_tip_label = tips_to_add[j],
 				# default location to add tip is the root
 				nodeID = Ntip(tree) + 1
@@ -439,9 +450,13 @@ collapse_all_nodes_between <- function(tree, tip_labels){
 	which_tips <- which(which_tips)
 	# first, find mom nodes
 	mom_nodes <- tree$edge[match(which_tips, tree$edge[,2]),1]
-	#######
+	#
 	if(mom_nodes[1] != mom_nodes[2]){
-		stop("tips of interest are still not have common ancestor even after collapsing!")
+		#print(tree);print(tip_labels);print(mom_nodes);print(tree$edge)
+		print(find_unshared_nodes(tree = tree, tip_labels = tip_labels))
+		get_node_lineage <- function(tree, node)
+		#
+		stop("tips of interest are still do not have common mother node even after collapsing!")
 		}
 	########
 	return(tree)	
@@ -463,8 +478,12 @@ find_unshared_nodes <- function(tree, tip_labels){
 		get_node_lineage(node = mom_nodes[1], tree = tree),
 		get_node_lineage(node = mom_nodes[2], tree = tree)
 		)		
+	#
+	print(table(node_lineages))
+	#
 	# find all nodes that aren't shared
 	unshared_nodes <- names(table(node_lineages))[table(node_lineages) == 1]
+	#
 	return(unshared_nodes)
 	}
 
