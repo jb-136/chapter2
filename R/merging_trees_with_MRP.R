@@ -8,22 +8,47 @@ merging_trees_with_MRP <- function(
 		reduce_collapse = TRUE,
 		trace = 0){
 	###############################
-	# remove branch lengths
-	tree_backbone$edge.length <- NULL
-	tree_secondary$edge.length <- NULL
-	#
+	
+	
+	
+	
 	##########################
 	# add an artificial outgroup to both trees
-	# make an artificial 1 tip tree
-	outgroup <- list(
-		edge = matrix(c(2,1),1,2),
-		tip.label = "placeholder_artificial_outgroup",
-		edge.length = NULL,
-		Nnode = 1)
-	class(outgroup)<-"phylo"
-	#
-	tree_backbone <- bind.tree(tree_backbone, outgroup)
-	tree_secondary <- bind.tree(tree_secondary, outgroup)
+	
+	new_tip_label = "placeholder_artificial_outgroup"
+	
+	
+	
+	add_single_taxon_to_tree <- function(tree, 
+			nodeID = Ntip(tree) + 1, 
+			new_tip_label){
+		###############################
+		# currently only handles trees without branch lengths
+			# in fact the branch lengths will be removed from the input tree
+		# remove branch lengths
+		tree$edge.length <- NULL
+		#
+		# make an artificial 1 tip tree
+		one_tip_tree <- list(
+			edge = matrix(c(2,1),1,2),
+			tip.label = new_tip_label,
+			edge.length = NULL,
+			Nnode = 1)
+		# make it class phylo
+		class(one_tip_tree)<-"phylo"
+		#
+		tree <- bind.tree(
+			
+			)
+		
+		tree_backbone <- bind.tree(tree_backbone, outgroup)
+		tree_secondary <- bind.tree(tree_secondary, outgroup)
+	
+
+	
+		}
+	
+	
 	#############
 	# Make sure the trees have properly structured clade labels!! No missing!
 	#
@@ -334,7 +359,8 @@ expand_collapsed_clades_post_pratchet<-function(
 		mom_nodes <- tree$edge[match(whichReplace, tree$edge[,2]),1]
 		#
 		if(mom_nodes[1] != mom_nodes[2]){
-			tree <- collapse_all_nodes_between(tree, whichTips)
+			tree <- collapse_all_nodes_between(
+				tree = tree, tip_labels = tip_names)
 			# reidentify which tips are to be replaced
 			whichReplace <- sapply(tree$tip.label,function(x)
 				any(x == tip_names))
@@ -344,9 +370,10 @@ expand_collapsed_clades_post_pratchet<-function(
 			}
 		#
 		# now let's add in all labels we removed as new descendants of the mom node
+		mom_node <- mom_nodes[1]
 		
 		
-		paleotree::collapseNodes 
+		
 		}
 		
 	# check that it has the correct number of taxa
@@ -367,27 +394,44 @@ collapse_all_nodes_between <- function(tree, tip_labels){
 		stop("these tips already share the same direct mother node??")
 		}
 	########
-	
+	# find all nodes that aren't shared
+	unshared_nodes <- find_unshared_nodes(
+		tree = tree, tip_labels = tip_labels)
+	#
 	while(length(unshared_nodes) > 1 ){
 		# pick one at random
 		collapse_this_node <- unshared_nodes[1]
-		
+		#
 		tree <- paleotree::collapseNodes(
 			nodeID = collapse_this_node,
-			tree = tree,collapseType = "backward") 
-		
+			tree = tree,
+			collapseType = "backward") 
+		#
 		# remake unshared_nodes
-		unshared_nodes_new
+		unshared_nodes_new <- find_unshared_nodes(
+			tree = tree, tip_labels = tip_labels)
 		# make sure the length of unshared_nodes changed
-		
+		if(length(unshared_nodes_new) >= length(unshared_nodes)){
+			stop("somehow removing unshared nodes made the number of unshared nodes not decrease")
+			}		
 		# 
-		
+		unshared_nodes <- unshared_nodes_new
 		}
-	
-
-	# find all nodes that aren't shared
-	unshared_nodes <- names(table(node_lineages))[table(node_lineages) == 1]
-	return(unshared_nodes)
+	###########
+	# check tree
+	# identify tips based on labels
+	which_tips <- sapply(tree$tip.label,function(x)
+		any(x == tip_labels))
+	which_tips <- which(which_tips)
+	# first, find mom nodes
+	mom_nodes <- tree$edge[match(which_tips, tree$edge[,2]),1]
+	#######
+	if(mom_nodes[1] != mom_nodes[2]){
+		stop("tips of interest are still not have common ancestor even after collapsing!")
+		}
+	########
+	return(tree)	
+	}
 
 
 find_unshared_nodes <- function(tree, tip_labels){
@@ -408,26 +452,6 @@ find_unshared_nodes <- function(tree, tip_labels){
 	# find all nodes that aren't shared
 	unshared_nodes <- names(table(node_lineages))[table(node_lineages) == 1]
 	return(unshared_nodes)
-	}
-
-
-	
-	
-
-	###########
-	# check tree
-	# identify tips based on labels
-	which_tips <- sapply(tree$tip.label,function(x)
-		any(x == tip_labels))
-	which_tips <- which(which_tips)
-	# first, find mom nodes
-	mom_nodes <- tree$edge[match(which_tips, tree$edge[,2]),1]
-	#######
-	if(mom_nodes[1] != mom_nodes[2]){
-		stop("tips of interest are still not have common ancestor even after collapsing!")
-		}
-	########
-	return(tree)	
 	}
 
 
