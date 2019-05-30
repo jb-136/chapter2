@@ -4,12 +4,14 @@
 \alias{render_chapter2}
 \title{Create a file of results}
 \usage{
-render_chapter2(taxon, format = "pdf")
+render_chapter2(taxon, format = "pdf", output_dir = getwd())
 }
 \arguments{
 \item{taxon}{Clade of interest}
 
 \item{format}{Format: pdf or html}
+
+\item{output_dir}{Where to put the output; by default, current working directory}
 }
 \value{
 Nothing, though a file is created in the current working directory

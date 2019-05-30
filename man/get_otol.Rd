@@ -10,12 +10,12 @@ get_otol(taxon)
 \item{taxon}{The clade to investigate}
 }
 \value{
-data.frame of info about that taxon. Columns include year of the study, number of taxa in the tree from that study, the study citation, and the study DOI.
+list containing studies (a data.frame of info about that taxon. Columns include year of the study, number of taxa in the tree from that study, the study citation, and the study DOI) and ntaxa (the number of taxa in OpenTree for that taxon).
 }
 \description{
 Get info from Open Tree of Life
 }
 \examples{
 info <- get_otol("Gallus")
-histogram(info$year) # Years in which chicken papers in OpenTree were published
+histogram(info$studies$year) # Years in which chicken papers in OpenTree were published
 }

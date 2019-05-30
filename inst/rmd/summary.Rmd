@@ -11,3 +11,20 @@ all_results <- chapter2::run_chapter2(params$taxon)
 ```
 
 # Taxon `r params$taxon`
+
+## Wikipedia summary
+
+`r all_results$wikipedia_summary`
+
+## OpenTree
+
+Taxon **`r params$taxon`** has `r all_results$otol$ntaxa` terminal taxa in OpenTree. This is based on taxonomy plus `r nrow(all_results$otol$studies)` studies.
+
+
+```{r, echo=FALSE}
+pander::pander(all_results$otol$studies, split.table = Inf)
+```
+
+## GenBank
+
+In GenBank, there are `r all_results$genbank_count` species listed for this group.
