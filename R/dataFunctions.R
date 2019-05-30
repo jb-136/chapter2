@@ -194,5 +194,7 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
 #' @export
 get_datelife_biggest <- function(taxon) {
   clade.name<- rotl::tnrs_match_names(taxon)$unique_name[1]
-  return(datelife::datelife_search(input=clade.name, get_spp_from_taxon=TRUE, summary_format=phylo_biggest))
+  datelife_biggest <- NULL
+  try(datelife_biggest <- datelife::datelife_search(input=clade.name, get_spp_from_taxon=TRUE, summary_format=phylo_biggest))
+  return(datelife_biggest)
 }
