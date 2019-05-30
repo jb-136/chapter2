@@ -21,6 +21,8 @@ run_chapter2 <- function(taxon) {
 #' @param output_dir Where to put the output; by default, current working directory
 #' @return Nothing, though a file is created in the current working directory
 #' @export
+#' @examples
+#' render_chapter2("Tyto")
 render_chapter2 <- function(taxon, format="pdf", output_dir=getwd()) {
   rmarkdown::render(system.file("rmd", "summary.Rmd", package="chapter2"), params=list(taxon=taxon),output_file=paste0("Report_",gsub(" ", "_",taxon), ".", format), output_dir=output_dir)
 }

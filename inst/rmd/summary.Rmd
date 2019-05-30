@@ -2,7 +2,7 @@
 title: "Chapter2"
 output: pdf_document
 params:
-  taxon: formicidae
+  taxon: Tyto
 ---
 
 ```{r, include=FALSE, echo=FALSE}
@@ -22,9 +22,38 @@ Taxon **`r params$taxon`** has `r all_results$otol$ntaxa` terminal taxa in OpenT
 
 
 ```{r, echo=FALSE}
-pander::pander(all_results$otol$studies, split.table = Inf)
+if(nrow(all_results$otol$studies)>0) {
+  pander::pander(all_results$otol$studies, split.table = Inf)
+}
 ```
+
+## Datelife
+
+```{r, echo=FALSE}
+if(inherits(all_results$datelife_biggest, "phylo")) {
+  plot(all_results$datelife_biggest)
+  ape::axisPhylo()
+} else {
+  print("Datelife did not contain a tree")
+}
+
 
 ## GenBank
 
 In GenBank, there are `r all_results$genbank_count` species listed for this group.
+
+```{r, echo=FALSE}
+pander::pander(data.frame(seqs=all_results$genbank_count_by_gene))
+```
+
+## PubMed
+
+There are `r all_results$pubmed$count` articles that match `r params$taxon` AND phylogeny on PubMed. Here are the most recent.
+
+```{r, echo=FALSE}
+pubmed.df <- all_results$pubmed$recent.papers
+if(nrow(pubmed.df)>0) {
+  pubmed.df <- pubmed.df[order(pubmed.df$Date, decreasing=TRUE),]
+  pander::pander(pubmed.df, split.table = Inf)
+}
+```

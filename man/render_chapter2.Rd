@@ -19,3 +19,6 @@ Nothing, though a file is created in the current working directory
 \description{
 Create a file of results
 }
+\examples{
+render_chapter2("Tyto")
+}

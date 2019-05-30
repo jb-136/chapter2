@@ -126,7 +126,7 @@ get_otol <- function(taxon) {
 
     }
   }
-  return(studies=tree.info, ntaxa=node.info)
+  return(list(studies=tree.info, ntaxa=node.info$num_tips))
 }
 
 #' Information about the number of species in the clade in genbank
