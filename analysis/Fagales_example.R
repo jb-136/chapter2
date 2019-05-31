@@ -1,12 +1,9 @@
 # mergingTreesWithMRP analysis
 
-devtools::install_github("phylotastic/datelife")
-devtools::install_github("dwbapst/paleotree", ref="developmentBranch")
+# devtools::install_github("phylotastic/datelife")
+# devtools::install_github("dwbapst/paleotree", ref="developmentBranch")
 
-# not sure its necessary to load these packages really
-# library(datelife)
-# library(paleotree)
-# probably necessary to load ape though
+# necessary to load ape though
 library(ape)
 
 # to test with otol Fagales tree
@@ -34,6 +31,7 @@ source("~//chapter2//R//merging_trees_with_MRP.R")
 mergedTree <- merging_trees_with_MRP(
 	tree_backbone, tree_secondary, 
 	reduce_collapse = TRUE,
+	backbone_reweighting=10,
 	trace=1)
 mergedTree
 
@@ -43,35 +41,32 @@ pdf_path <- paste0("~//chapter2//analysis/",
 		format(Sys.time(), "%m-%d-%y"),
 		".pdf")
 
-
 pdf(file = pdf_path,
-	height = 100,
-	width = 4)
+	height = 50)
 plot(mergedTree,
-	cex=0.3,
+	cex=0.2,
 	show.tip.label = TRUE,
 	no.margin = TRUE)
 dev.off()
 # need to use path expand to convert ~
 shell.exec(path.expand(pdf_path))
 
-
-########################################################
-
-
-# then get the strict consensus?
-
-strictMerged <- consensus(mergedTrees, p = 1, check.labels = TRUE)
-
-
-
-plot(strictMerged)
-
-pdf("fagales_mrp_fan.pdf", height = 10)
+pdf_path <- paste0("~//chapter2//analysis/",
+		"merged_Fagales_tree_fan_",
+		format(Sys.time(), "%m-%d-%y"),
+		".pdf")
+pdf(file = pdf_path,
+	 height = 10)
 mergedTreesx <- ape::compute.brlen(mergedTrees)
 plot(mergedTreesx, cex = 0.2, type = "fan")
 dev.off()
 
-pdf("fagales_mrp.pdf", height = 50)
-plot(mergedTrees, cex = 0.2)
-dev.off()
+
+
+########################################################
+
+# then get the strict consensus?
+# strictMerged <- consensus(mergedTrees, p = 1, check.labels = TRUE)
+# plot(strictMerged)
+
+
