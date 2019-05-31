@@ -51,16 +51,19 @@ dev.off()
 # need to use path expand to convert ~
 shell.exec(path.expand(pdf_path))
 
+# fan
+
 pdf_path <- paste0("~//chapter2//analysis/",
 		"merged_Fagales_tree_fan_",
 		format(Sys.time(), "%m-%d-%y"),
 		".pdf")
 pdf(file = pdf_path,
-	 height = 10)
-mergedTreesx <- ape::compute.brlen(mergedTrees)
-plot(mergedTreesx, cex = 0.2, type = "fan")
+	 height = 30, width = 30)
+mergedTreeBrlen <- ape::compute.brlen(mergedTree)
+plot(mergedTreeBrlen, cex = 0.2, type = "fan")
 dev.off()
-
+# need to use path expand to convert ~
+shell.exec(path.expand(pdf_path))
 
 
 ########################################################
