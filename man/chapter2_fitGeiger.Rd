@@ -16,6 +16,9 @@ chapter2_fitGeiger(chapter2, models = NULL, keep = c("continuous",
 
 \item{ncores}{how many cores to use; if NULL, detects automatically}
 }
+\value{
+A two dimensional list. The first dimension is model, the second is character
+}
 \description{
 Note that this ignores SE at the moment. If a character is missing information for a taxon, that taxon is deleted for just that character only.
 }

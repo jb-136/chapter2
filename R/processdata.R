@@ -135,7 +135,7 @@ chapter2_drop_type <- function(chapter2, keep=c("continuous", "discrete")) {
 #' @param models which models to use. If NULL, uses all available
 #' @param keep continuous or discrete data
 #' @param ncores how many cores to use; if NULL, detects automatically
-#' @returns A two dimensional list. The first dimension is model, the second is character
+#' @return A two dimensional list. The first dimension is model, the second is character
 #' @export
 #' @examples
 #' data(geospiza,package="geiger")
@@ -182,7 +182,7 @@ chapter2_fitGeiger <- function(chapter2, models=NULL, keep=c("continuous", "disc
 # #' @param chapter2 a chapter2 class object, with tree and datasets
 # #' @param models which models to used
 # #' @param ncores how many cores to use; if NULL, detects automatically
-# #' @returns A two dimensio list. The first dimension is model, the second is character
+# #' @return A two dimensio list. The first dimension is model, the second is character
 # #' @export
 #
 # chapter2_fitDiscrete <- function (chapter2, models = c("ER","SYM","ARD","meristic"), ncores=NULL){

@@ -53,13 +53,13 @@ pbdb_taxon_query <- function(taxon){
   lat_long$searched_taxon <- taxon
   return(lat_long)
 }
-
-remotes::install_github("ropensci/rfishbase")
-library("rfishbase")
-library("dplyr")
-
-dat <- distribution(species_list(Genus='Labroides'))
-dat <- dat[c("SpecCode", "Species", "NorthernLatitude", "NorthernLatitudeNS", "SouthernLatitude", "SouthernLatitudeNS", "WesternLongitude", "WesternLongitudeEW", "EasternLongitude", "EasternLongitudeEW")]
+#
+# remotes::install_github("ropensci/rfishbase")
+# library("rfishbase")
+# library("dplyr")
+#
+# dat <- distribution(species_list(Genus='Labroides'))
+# dat <- dat[c("SpecCode", "Species", "NorthernLatitude", "NorthernLatitudeNS", "SouthernLatitude", "SouthernLatitudeNS", "WesternLongitude", "WesternLongitudeEW", "EasternLongitude", "EasternLongitudeEW")]
 
 
 #' Get information on fish localities rfishbase

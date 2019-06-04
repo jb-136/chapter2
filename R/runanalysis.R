@@ -38,3 +38,40 @@ render_chapter2 <- function(taxon, format="pdf", output_dir=getwd()) {
 run_biogeobears <- function(phy, locations) {
 
 }
+
+#' All pairwise correlations
+#'
+#' Use independent contrasts on each pair of traits. If a trait is missing for a taxon, drop that taxon for all analyses with that trait but not others. It runs cor.test on the positivized contrasts and returns the correlation, lower, and upper 95% values for the contrasts
+#'
+#' @param phy A phylo object
+#' @param traits A data.frame of traits, with taxon names as rownames
+#' @return A list with three objects: the correlations, lower, and upper.
+#' @export
+contrasts_correlations <- function(phy, traits) {
+  correlations <- matrix(NA, ncol=ncol(traits), nrow=ncol(traits))
+  rownames(correlations) <- colnames(traits)
+  colnames(correlations) <- colnames(traits)
+  correlations.lower <- correlations
+  correlations.upper <- correlations
+  for (i in sequence(nrow(correlations))) {
+    for (j in sequence(ncol(correlations))) {
+      if (j>i) {
+        traits.local <- traits[,c(i,j)]
+        traits.local <- traits.local[!is.na(traits.local[,1]),]
+        traits.local <- traits.local[!is.na(traits.local[,2]),]
+
+        pruned <- geiger::treedata(phy, traits.local, sort=TRUE, warnings=FALSE)
+        pic.x <- ape::pic(pruned$data[,1], pruned$phy)
+        pic.y <- ape::pic(pruned$data[,2], pruned$phy)
+        # positivize the values
+        pic.y[which(pic.x<0)] <- -pic.y[which(pic.x<0)]
+        pic.x <- abs(pic.x)
+        result <- cor.test(pic.x, pic.y)
+        correlations[i,j] <- result$estimate
+        correlations.lower[i,j] <- result$conf.int[1]
+        correlations.upper[i,j] <- result$conf.int[2]
+      }
+    }
+  }
+  return(list(correlations=correlations, lower=correlations.lower, upper=correlations.upper))
+}
