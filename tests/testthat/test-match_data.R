@@ -24,3 +24,8 @@ test_that("chapter2_fitGeiger works", {
   fc_result <- chapter2_fitGeiger(chapter2, keep="continuous")
   expect_true(inherits(fc_result[[1]][[1]], "gfit"))
 })
+
+test_that("gbif_taxon_query works", {
+  result <- gbif_taxon_query("Puma", gbif_limit=600)
+  expect_true(inherits(result$data$decimalLatitude), "numeric")
+})

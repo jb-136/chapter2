@@ -6,15 +6,15 @@ library(plyr)
 #'
 #' @param query name of the clade of interest
 #' @param rank the clade's rank (e.g. "genus")
+#' @param gbif_limit Maximum number of records to return (hard limit is 200000)
 #' @return A data frame (tibble) of key, scientific name, decimal latitude, and decimal longitude
 #' @export
 
 
 
-gbif_taxon_query <- function (query, rank){
+gbif_taxon_query <- function (query, rank=NULL, gbif_limit=200000){
   key <- rgbif::name_suggest(q=query, rank=rank)$key[1]
-  dat <- rgbif::occ_search(taxonKey=key, fields="minimal", limit=300)
-
+  dat <- rgbif::occ_search(taxonKey=key, fields="minimal", limit=gbif_limit)
   return(dat)
 }
 
@@ -24,13 +24,14 @@ gbif_taxon_query <- function (query, rank){
 #' Query gbif to return latitude and longitude for a vector of species
 #'
 #' @param species a vector of species names
+#' @param gbif_limit Maximum number of records to return (hard limit is 200000)
 #' @return A data frame (tibble) of key, scientific name, decimal latitude, and decimal longitude
 #' @export
 
-gbif_species_query <- function (species){
+gbif_species_query <- function (species, gbif_limit=200000){
   all.records <- data.frame()
   for (species_index in seq_along(species)) {
-    all.records <- plyr::rbind.fill(all.records, rgbif::occ_search(scientificName = species[species_index], fields="minimal", limit = 300)$data)
+    all.records <- plyr::rbind.fill(all.records, rgbif::occ_search(scientificName = species[species_index], fields="minimal", limit = gbif_limit)$data)
   }
   return(all.records)
 }
