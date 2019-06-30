@@ -45,15 +45,26 @@ gbif_species_query <- function (species, gbif_limit=200000){
 #' @param limit The limit of records per site to get (default is maximum of any site)
 #' @param sources Vector of sources (see ?spocc::occ)
 #' @param has_coords Boolean for whether to only return records with longitude and latitude data
+#' @param by_species Boolean: if TRUE, separates the taxon into species first
 #' @param ... Other arguments to pass to spocc::occ
 #' @return data.frame of results
 #' @export
 #' @examples
-#' points <- spocc_taxon_query("Myrmecocystus", limit=50)
-spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "idigbio"), has_coords=TRUE, ...) {
+#' locations <- spocc_taxon_query("Myrmecocystus", limit=50)
+spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "idigbio"), has_coords=TRUE, by_species=TRUE, ...) {
   all.records <- data.frame()
-  for (taxon_index in seq_along(taxon)) {
-    all.records <- plyr::rbind.fill(all.records, spocc::occ2df(spocc::occ(query=taxon[taxon_index], from=sources, limit=limit, has_coords=has_coords)))
+  all.taxa <- c()
+  if(by_species) {
+    for (taxon_index in seq_along(taxon)) {
+      all.taxa <- c(all.taxa,descendant_species(taxon[taxon_index]))
+    }
+  } else {
+    all.taxa <- taxon
+  }
+  for (taxon_index in seq_along(all.taxa)) {
+    local.records <- spocc::occ2df(spocc::occ(query=all.taxa[taxon_index], from=sources, limit=limit, has_coords=has_coords))
+    local.records$taxon <- all.taxa[taxon_index]
+    all.records <- plyr::rbind.fill(all.records, local.records)
   }
   all.records$longitude <- as.numeric(all.records$longitude)
   all.records$latitude <- as.numeric(all.records$latitude)
@@ -68,6 +79,46 @@ spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "id
 #' @export
 locality_clean <- function(locations) {
   return(CoordinateCleaner::clean_coordinates(locations, lon="longitude", lat="latitude", species=NULL, tests=c( "centroids", "equal", "gbif", "institutions","zeros"), value="clean"))
+}
+
+#' Use azizka/speciesgeocodeR/ and WWF data to encode locations for habitat and biome
+#'
+#' Uses info from http://omap.africanmarineatlas.org/BIOSPHERE/data/note_areas_sp/Ecoregions_Ecosystems/WWF_Ecoregions/WWFecoregions.htm to convert codes to more readable text
+#'
+#' @param locations Data.frame containing points (latitude and longitude, perhaps other data as columns)
+#' @return data.frame with columns for habitat and biome.
+#' @export
+#' @examples
+#' locations <- spocc_taxon_query("Myrmecocystus", limit=50)
+#' locations <- locality_clean(locations)
+#' locations <- locality_add_habitat_biome(locations)
+#' print(head(locations))
+locality_add_habitat_biome <- function(locations) {
+  locations.spatial <- sp::SpatialPointsDataFrame(coords=locations[,c("longitude", "latitude")], data=locations)
+  wwf <- speciesgeocodeR::WWFload(tempdir())
+  mappedregions <- sp::over(locations.spatial, wwf)
+  realms <- data.frame(code=c("AA", "AN", "AT", "IM", "NA", "NT", "OC", "PA"), realm=c("Australasia", "Antarctic", "Afrotropics", "IndoMalay", "Nearctic", "Neotropics", "Oceania", "Palearctic"), stringsAsFactors=FALSE)
+  biomes <- c("Tropical & Subtropical Moist Broadleaf Forests", "Tropical & Subtropical Dry Broadleaf Forests", "Tropical & Subtropical Coniferous Forests", "Temperate Broadleaf & Mixed Forests", "Temperate Conifer Forests", "Boreal Forests/Taiga", "Tropical & Subtropical Grasslands, Savannas & Shrubland", "Temperate Grasslands, Savannas & Shrublands", "Flooded Grasslands & Savannas", "Montane Grasslands & Shrublands", "Tundra", "Mediterranean Forests, Woodlands & Scrub", "Deserts & Xeric Shrublands", "Mangroves")
+  locations$eco_name <- mappedregions$ECO_NAME
+  locations$biome <- biomes[mappedregions$BIOME]
+  locations$realm <- NA
+  for (i in sequence(nrow(locations))) {
+    locations$realm[i] <- realms$realm[which(realms$code==mappedregions$REALM)]
+  }
+  return(locations)
+}
+
+#' Get all descendant species of the taxon
+#'
+#' Uses taxize and the Catalog of Life
+#'
+#' @param taxon Clade of interest
+#' @return vector of species names
+#' @export
+descendant_species <- function(taxon) {
+  id <- taxize::get_colid(taxon, ask=FALSE)
+  species <- taxize::downstream(id, downto = "species", db = "col")[[1]]$childtaxa_name
+  return(species)
 }
 
 

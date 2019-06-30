@@ -5,7 +5,7 @@
 \title{Query many sources at once using spocc to get latitude and longitude}
 \usage{
 spocc_taxon_query(taxon, limit = 1e+05, sources = c("gbif", "inat",
-  "idigbio"), has_coords = TRUE, ...)
+  "idigbio"), has_coords = TRUE, by_species = TRUE, ...)
 }
 \arguments{
 \item{taxon}{The taxon to get. If a vector, loops over it.}
@@ -16,6 +16,8 @@ spocc_taxon_query(taxon, limit = 1e+05, sources = c("gbif", "inat",
 
 \item{has_coords}{Boolean for whether to only return records with longitude and latitude data}
 
+\item{by_species}{Boolean: if TRUE, separates the taxon into species first}
+
 \item{...}{Other arguments to pass to spocc::occ}
 }
 \value{
@@ -25,5 +27,5 @@ data.frame of results
 Query many sources at once using spocc to get latitude and longitude
 }
 \examples{
-points <- spocc_taxon_query("Myrmecocystus", limit=50)
+locations <- spocc_taxon_query("Myrmecocystus", limit=50)
 }
