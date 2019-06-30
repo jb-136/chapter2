@@ -108,6 +108,43 @@ locality_add_habitat_biome <- function(locations) {
   return(locations)
 }
 
+#' Aggregate count by category
+#'
+#' Get count (or frequency) of number of entries per taxon for each category. The return will be a matrix with rows equal to your taxa and columns all possible categories for the focal column, with entries being the number / frequency of records for that taxon for that category
+#'
+#' @param locations Data.frame of locations (i.e., from locality_add_habitat_biome)
+#' @param focal Column name to aggregate data over.
+#' @param group_by What column name to use for grouping
+#' @param return_frequency Boolean; if TRUE, give frequency, not counts
+#' @return A matrix of counts or frequencies
+#' @export
+#' @examples
+#' locations <- spocc_taxon_query("Bubo", limit=500)
+#' locations <- locality_clean(locations)
+#' locations <- locality_add_habitat_biome(locations)
+#' biome_counts <- aggregate_category(locations, focal="biome", group_by="taxon")
+#' print(head(biome_counts))
+#' realm_frequencies <- aggregate_category(locations, focal="realm", group_by="taxon", return_frequency=TRUE)
+#' print(head(realm_frequencies))
+aggregate_category <- function(locations, focal='realm', group_by = "taxon", return_frequency=FALSE) {
+  categories <- sort(unique(locations[,focal]))
+  taxa <- sort(unique(locations[,group_by]))
+  result <- matrix(0, nrow=length(taxa), ncol=length(categories))
+  rownames(matrix) <- taxa
+  colnames(matrix) <- categories
+  for (taxon_index in seq_along(taxa)) {
+    for (category_index in seq_along(categories)) {
+      result[taxon_index, category_index] <- nrow(subset(locations, locations[,focal]==categories[category_index] & locations[,group_by]==taxa[taxon_index]))
+    }
+  }
+  if(return_frequency) {
+    for (taxon_index in seq_along(taxa)) {
+      locations[taxon_index,] <- locations[taxon_index,] / sum(locations[taxon_index,])
+    }
+  }
+  return(locations)
+}
+
 #' Get all descendant species of the taxon
 #'
 #' Uses taxize and the Catalog of Life
@@ -116,8 +153,9 @@ locality_add_habitat_biome <- function(locations) {
 #' @return vector of species names
 #' @export
 descendant_species <- function(taxon) {
-  id <- taxize::get_colid(taxon, ask=FALSE)
-  species <- taxize::downstream(id, downto = "species", db = "col")[[1]]$childtaxa_name
+  #col_id <- taxize::gnr_resolve(taxon, data_source_ids=1, ask=FALSE, fields="all", best_match_only=TRUE)
+  col_id <- taxize::get_colid_(taxon)[[1]]$id[1]
+  species <- taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name
   return(species)
 }
 
@@ -268,6 +306,8 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
   pubmed.df <- data.frame(Date=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortpubdate")), FirstAuthor=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortfirstauthor")), Journal=rentrez::extract_from_esummary(pubmed.summaries, elements=c("fulljournalname")), Title=rentrez::extract_from_esummary(pubmed.summaries, elements=c("title")), row.names=NULL)
   return(list(count=pubmed.result$count,   recent.papers =   pubmed.df ))
 }
+
+
 
 #' Get biggest tree from datelife
 #'
