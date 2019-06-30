@@ -36,9 +36,24 @@ gbif_species_query <- function (species, gbif_limit=200000){
   return(all.records)
 }
 
-
 # e.g.  species <- c("Puma concolor", "Myrmecocystus mexicanus", "Ursus arctos")
 # gbif_species_query(species=species)
+
+#' Query many sources at once using spocc to get latitude and longitude
+#'
+#' @param taxon The taxon to get. If a vector, loops over it.
+#' @param limit The limit of records per site to get (default is maximum of any site)
+#' @param sources Vector of sources (see ?spocc::occ)
+#' @param ... Other arguments to pass to spocc::occ
+#' @return data.frame of results
+#' @examples
+#' points <- spocc_taxon_query("Myrmecocystus", limit=50)
+spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "bison", "inat", "ebird", "ecoengin", "vertnet", "idigbio", "obis", "ala"), ...) {
+  all.records <- data.frame()
+  for (taxon_index in seq_along(taxon)) {
+    all.records <- plyr::rbind.fill(spocc::occ2df(spocc::occ(query=taxon[taxon_index], from=sources, limit=limit)))
+  }
+}
 
 
 #' Get information on specimens from the paleobiology data base (largely for extinct taxa)
