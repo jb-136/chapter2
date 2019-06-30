@@ -46,6 +46,7 @@ gbif_species_query <- function (species, gbif_limit=200000){
 #' @param sources Vector of sources (see ?spocc::occ)
 #' @param ... Other arguments to pass to spocc::occ
 #' @return data.frame of results
+#' @export
 #' @examples
 #' points <- spocc_taxon_query("Myrmecocystus", limit=50)
 spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "bison", "inat", "ebird", "ecoengin", "vertnet", "idigbio", "obis", "ala"), ...) {
