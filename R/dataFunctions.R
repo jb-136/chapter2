@@ -44,16 +44,30 @@ gbif_species_query <- function (species, gbif_limit=200000){
 #' @param taxon The taxon to get. If a vector, loops over it.
 #' @param limit The limit of records per site to get (default is maximum of any site)
 #' @param sources Vector of sources (see ?spocc::occ)
+#' @param has_coords Boolean for whether to only return records with longitude and latitude data
 #' @param ... Other arguments to pass to spocc::occ
 #' @return data.frame of results
 #' @export
 #' @examples
 #' points <- spocc_taxon_query("Myrmecocystus", limit=50)
-spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "bison", "inat", "ebird", "ecoengin", "vertnet", "idigbio", "obis", "ala"), ...) {
+spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "idigbio"), has_coords=TRUE, ...) {
   all.records <- data.frame()
   for (taxon_index in seq_along(taxon)) {
-    all.records <- plyr::rbind.fill(spocc::occ2df(spocc::occ(query=taxon[taxon_index], from=sources, limit=limit)))
+    all.records <- plyr::rbind.fill(all.records, spocc::occ2df(spocc::occ(query=taxon[taxon_index], from=sources, limit=limit, has_coords=has_coords)))
   }
+  all.records$longitude <- as.numeric(all.records$longitude)
+  all.records$latitude <- as.numeric(all.records$latitude)
+  return(all.records)
+}
+
+#' Clean locality information
+#'
+#' This uses the ropensci CoordinateCleaner package to clean up points.
+#' @param locations Data.frame containing points (latitude and longitude, perhaps other data as columns)
+#' @return Cleaned data.frame
+#' @export
+locality_clean <- function(locations) {
+  return(CoordinateCleaner::clean_coordinates(locations, lon="longitude", lat="latitude", species=NULL, tests=c( "centroids", "equal", "gbif", "institutions","zeros"), value="clean"))
 }
 
 
