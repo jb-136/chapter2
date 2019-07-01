@@ -78,6 +78,7 @@ spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "id
 #' @return Cleaned data.frame
 #' @export
 locality_clean <- function(locations) {
+  locations <- CoordinateCleaner::cc_val(locations, lon="longitude", lat="latitude", value="clean")
   return(CoordinateCleaner::clean_coordinates(locations, lon="longitude", lat="latitude", species=NULL, tests=c( "centroids", "equal", "gbif", "institutions","zeros"), value="clean"))
 }
 
@@ -130,8 +131,8 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
   categories <- sort(unique(locations[,focal]))
   taxa <- sort(unique(locations[,group_by]))
   result <- matrix(0, nrow=length(taxa), ncol=length(categories))
-  rownames(matrix) <- taxa
-  colnames(matrix) <- categories
+  rownames(result) <- taxa
+  colnames(result) <- categories
   for (taxon_index in seq_along(taxa)) {
     for (category_index in seq_along(categories)) {
       result[taxon_index, category_index] <- nrow(subset(locations, locations[,focal]==categories[category_index] & locations[,group_by]==taxa[taxon_index]))
@@ -139,9 +140,10 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
   }
   if(return_frequency) {
     for (taxon_index in seq_along(taxa)) {
-      locations[taxon_index,] <- locations[taxon_index,] / sum(locations[taxon_index,])
+      result[taxon_index,] <- result[taxon_index,] / sum(result[taxon_index,])
     }
   }
+  locations <- cbind(locations, result)
   return(locations)
 }
 
