@@ -1,12 +1,13 @@
 ---
 title: "Chapter2"
-output: pdf_document
+output:
+  pdf_document:
+    latex_engine: xelatex
 params:
   taxon: Tyto
 ---
 
 ```{r, include=FALSE, echo=FALSE}
-library(chapter2)
 all_results <- chapter2::run_chapter2(params$taxon)
 ```
 
@@ -56,4 +57,12 @@ if(nrow(pubmed.df)>0) {
   pubmed.df <- pubmed.df[order(pubmed.df$Date, decreasing=TRUE),]
   pander::pander(pubmed.df, split.table = Inf)
 }
+```
+
+## Realm
+
+Here is information about realms (biogeographic regions) by species
+
+```{r, echo=FALSE}
+pander::pander(data.frame(seqs=all_results$location_realm_biome$realm))
 ```

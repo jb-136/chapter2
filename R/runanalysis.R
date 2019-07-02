@@ -10,7 +10,8 @@ run_chapter2 <- function(taxon) {
   genbank_count_by_gene <- get_genbank_count_by_gene(taxon)
   genbank_count <- get_genbank_count(taxon)
   otol <- get_otol(taxon)
-  return(list(wikipedia_summary=wikipedia_summary, datelife_biggest=datelife_biggest, pubmed=pubmed, genbank_count_by_gene=genbank_count_by_gene, genbank_count=genbank_count , otol=otol))
+  location_realm_biome <- get_location_realm_biome(taxon, limit=50)
+  return(list(wikipedia_summary=wikipedia_summary, datelife_biggest=datelife_biggest, pubmed=pubmed, genbank_count_by_gene=genbank_count_by_gene, genbank_count=genbank_count , otol=otol, location_realm_biome=location_realm_biome))
 
 }
 
@@ -24,7 +25,7 @@ run_chapter2 <- function(taxon) {
 #' @examples
 #' render_chapter2("Tyto")
 render_chapter2 <- function(taxon, format="pdf", output_dir=getwd()) {
-  rmarkdown::render(system.file("rmd", "summary.Rmd", package="chapter2"), params=list(taxon=taxon),output_file=paste0("Report_",gsub(" ", "_",taxon), ".", format), output_dir=output_dir, output_options=list('--pdf-engine'="xelatex"))
+  rmarkdown::render(system.file("rmd", "summary.Rmd", package="chapter2"), params=list(taxon=taxon),output_file=paste0("Report_",gsub(" ", "_",taxon), ".", format), output_dir=output_dir, encoding="UTF-8")
 }
 
 #' Run biogeobears analyses

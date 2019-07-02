@@ -64,11 +64,13 @@ spocc_taxon_query <- function(taxon, limit=10000, sources=c("gbif", "inat", "idi
   }
   for (taxon_index in seq_along(all.taxa)) {
     local.records <- spocc::occ2df(spocc::occ(query=all.taxa[taxon_index], from=sources, limit=limit, has_coords=has_coords))
-    local.records$taxon <- all.taxa[taxon_index]
     if(verbose) {
       print(paste0("Now finished with ", nrow(local.records), " records for ", all.taxa[taxon_index], " which is taxon ", taxon_index, " of ", length(all.taxa), " taxa"))
     }
-    all.records <- plyr::rbind.fill(all.records, local.records)
+    if(nrow(local.records)>0) {
+      local.records$taxon <- all.taxa[taxon_index]
+      all.records <- plyr::rbind.fill(all.records, local.records)
+    }
   }
   all.records$longitude <- as.numeric(all.records$longitude)
   all.records$latitude <- as.numeric(all.records$latitude)
@@ -159,8 +161,12 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
 #' @export
 descendant_species <- function(taxon) {
   #col_id <- taxize::gnr_resolve(taxon, data_source_ids=1, ask=FALSE, fields="all", best_match_only=TRUE)
-  col_id <- taxize::get_colid_(taxon)[[1]]$id[1]
-  species <- taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name
+
+  #col_id <- taxize::get_colid_(taxon)[[1]]$id[1]
+  #species <- taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name
+
+  gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1]
+  species <- taxize::downstream(gbif_id, downto = "species", db = "gbif")[[1]]$name
   return(species)
 }
 
@@ -312,7 +318,20 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
   return(list(count=pubmed.result$count,   recent.papers =   pubmed.df ))
 }
 
-
+#' Get location, realm, and biome
+#'
+#' @param taxon Clade of interest
+#" @param limit Maximum number of points per species per source
+#' @return list containing a data.frame of species and locations, a table of realms (biogeographic regions), and a table of biomes
+#' @export
+get_location_realm_biome <- function(taxon, limit=10000) {
+  locations <- spocc_taxon_query(taxon, limit=limit)
+  locations <- locality_clean(locations)
+  locations <- locality_add_habitat_biome(locations)
+  biome <- aggregate_category(locations, focal="biome", group_by="taxon")
+  realm <- aggregate_category(locations, focal="realm", group_by="taxon")
+  return(list(locations=locations, realm=realm, biome=biome))
+}
 
 #' Get biggest tree from datelife
 #'
