@@ -46,12 +46,13 @@ gbif_species_query <- function (species, gbif_limit=200000){
 #' @param sources Vector of sources (see ?spocc::occ)
 #' @param has_coords Boolean for whether to only return records with longitude and latitude data
 #' @param by_species Boolean: if TRUE, separates the taxon into species first
+#' @param verbose Boolean: if TRUE, print out progress
 #' @param ... Other arguments to pass to spocc::occ
 #' @return data.frame of results
 #' @export
 #' @examples
 #' locations <- spocc_taxon_query("Myrmecocystus", limit=50)
-spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "idigbio"), has_coords=TRUE, by_species=TRUE, ...) {
+spocc_taxon_query <- function(taxon, limit=10000, sources=c("gbif", "inat", "idigbio"), has_coords=TRUE, by_species=TRUE, verbose=TRUE, ...) {
   all.records <- data.frame()
   all.taxa <- c()
   if(by_species) {
@@ -64,6 +65,9 @@ spocc_taxon_query <- function(taxon, limit=100000, sources=c("gbif", "inat", "id
   for (taxon_index in seq_along(all.taxa)) {
     local.records <- spocc::occ2df(spocc::occ(query=all.taxa[taxon_index], from=sources, limit=limit, has_coords=has_coords))
     local.records$taxon <- all.taxa[taxon_index]
+    if(verbose) {
+      print(paste0("Now finished with ", nrow(local.records), " records for ", all.taxa[taxon_index], " which is taxon ", taxon_index, " of ", length(all.taxa), " taxa"))
+    }
     all.records <- plyr::rbind.fill(all.records, local.records)
   }
   all.records$longitude <- as.numeric(all.records$longitude)
@@ -143,8 +147,7 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
       result[taxon_index,] <- result[taxon_index,] / sum(result[taxon_index,])
     }
   }
-  locations <- cbind(locations, result)
-  return(locations)
+  return(result)
 }
 
 #' Get all descendant species of the taxon
