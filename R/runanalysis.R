@@ -10,7 +10,7 @@ run_chapter2 <- function(taxon) {
   genbank_count_by_gene <- get_genbank_count_by_gene(taxon)
   genbank_count <- get_genbank_count(taxon)
   otol <- get_otol(taxon)
-  location_realm_biome <- get_location_realm_biome(taxon, limit=50)
+  location_realm_biome <- get_location_realm_biome(taxon)
   return(list(wikipedia_summary=wikipedia_summary, datelife_biggest=datelife_biggest, pubmed=pubmed, genbank_count_by_gene=genbank_count_by_gene, genbank_count=genbank_count , otol=otol, location_realm_biome=location_realm_biome))
 
 }
