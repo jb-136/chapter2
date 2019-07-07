@@ -15,19 +15,22 @@ Depends:
     R (>= 3.0.0),
     ape (>= 4.1)
 Imports:
+    CoordinateCleaner,
     datelife,
-    dplyr,
     geiger,
     jsonlite,
     paleotree,
     phangorn,
     plyr,
-    remotes,
     rentrez,
     rfishbase,
     rgbif,
     rmarkdown,
     rotl,
+    sp,
+    speciesgeocodeR,
+    spocc,
+    taxize,
     utils
 Suggests:
     testthat (>= 2.1.0)
