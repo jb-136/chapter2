@@ -168,8 +168,9 @@ descendant_species <- function(taxon) {
 
   try(gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1])
   try(species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name)
-  try(species <- c(species, datelife::get_ott_children(taxon)))
-  try(species <- c(species, taxize::downstream("Onthophagus", db = 'itis', downto = 'species')[[1]]$taxonname))
+  try(species <- c(species, datelife::get_ott_children(input=taxon)))
+  try(col_id <- taxize::get_colid_(taxon)[[1]]$id[1])
+  try(species <- c(species,taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name))
   try(species <- unique(species))
   return(species)
 }
