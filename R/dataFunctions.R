@@ -154,7 +154,7 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
 
 #' Get all descendant species of the taxon
 #'
-#' Uses taxize and GBIF. Note it can only get up to 1000 names currently
+#' Uses taxize, datelife, and sources of GBIF, Catalogue of Life, and OpenTree. Note it can only get up to 1000 names currently
 #'
 #' @param taxon Clade of interest
 #' @return vector of species names
@@ -168,9 +168,9 @@ descendant_species <- function(taxon) {
 
   try(gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1])
   try(species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name)
-  if(length(species)==0) {
-    try(species <- downstream("Onthophagus", db = 'itis', downto = 'species')[[1]]$taxonname)
-  }
+  try(species <- c(species, datelife::get_ott_children(taxon)))
+  try(species <- c(species, taxize::downstream("Onthophagus", db = 'itis', downto = 'species')[[1]]$taxonname))
+  try(species <- unique(species))
   return(species)
 }
 
