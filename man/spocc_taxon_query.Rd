@@ -17,7 +17,7 @@ spocc_taxon_query(taxon, limit = 10000, sources = c("gbif", "inat",
 
 \item{has_coords}{Boolean for whether to only return records with longitude and latitude data}
 
-\item{by_species}{Boolean: if TRUE, separates the taxon into species first}
+\item{by_species}{Boolean: if TRUE, separates the taxon into species first (and searches for the higher level taxon as well)}
 
 \item{verbose}{Boolean: if TRUE, print out progress}
 

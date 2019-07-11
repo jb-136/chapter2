@@ -160,13 +160,17 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
 #' @return vector of species names
 #' @export
 descendant_species <- function(taxon) {
+  species <- c()
   #col_id <- taxize::gnr_resolve(taxon, data_source_ids=1, ask=FALSE, fields="all", best_match_only=TRUE)
 
   #col_id <- taxize::get_colid_(taxon)[[1]]$id[1]
   #species <- taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name
 
-  gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1]
-  species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name
+  try(gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1])
+  try(species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name)
+  if(length(species)==0) {
+    try(species <- downstream("Onthophagus", db = 'itis', downto = 'species')[[1]]$taxonname)
+  }
   return(species)
 }
 
