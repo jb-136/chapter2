@@ -13,5 +13,5 @@ descendant_species(taxon)
 vector of species names
 }
 \description{
-Uses taxize and the Catalog of Life
+Uses taxize and GBIF. Note it can only get up to 1000 names currently
 }

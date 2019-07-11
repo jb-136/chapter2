@@ -45,7 +45,7 @@ gbif_species_query <- function (species, gbif_limit=200000){
 #' @param limit The limit of records per site to get (default is maximum of any site)
 #' @param sources Vector of sources (see ?spocc::occ)
 #' @param has_coords Boolean for whether to only return records with longitude and latitude data
-#' @param by_species Boolean: if TRUE, separates the taxon into species first
+#' @param by_species Boolean: if TRUE, separates the taxon into species first (and searches for the higher level taxon as well)
 #' @param verbose Boolean: if TRUE, print out progress
 #' @param ... Other arguments to pass to spocc::occ
 #' @return data.frame of results
@@ -54,7 +54,7 @@ gbif_species_query <- function (species, gbif_limit=200000){
 #' locations <- spocc_taxon_query("Myrmecocystus", limit=50)
 spocc_taxon_query <- function(taxon, limit=10000, sources=c("gbif", "inat", "idigbio"), has_coords=TRUE, by_species=TRUE, verbose=TRUE, ...) {
   all.records <- data.frame()
-  all.taxa <- c()
+  all.taxa <- c(taxon)
   if(by_species) {
     for (taxon_index in seq_along(taxon)) {
       all.taxa <- c(all.taxa,descendant_species(taxon[taxon_index]))
@@ -154,7 +154,7 @@ aggregate_category <- function(locations, focal='realm', group_by = "taxon", ret
 
 #' Get all descendant species of the taxon
 #'
-#' Uses taxize and the Catalog of Life
+#' Uses taxize and GBIF. Note it can only get up to 1000 names currently
 #'
 #' @param taxon Clade of interest
 #' @return vector of species names
@@ -166,7 +166,7 @@ descendant_species <- function(taxon) {
   #species <- taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name
 
   gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1]
-  species <- taxize::downstream(gbif_id, downto = "species", db = "gbif")[[1]]$name
+  species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name
   return(species)
 }
 
@@ -313,8 +313,13 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
   clade.name<- rotl::tnrs_match_names(taxon)$unique_name[1]
   pubmed.query <- paste0(clade.name, search.string)
   pubmed.result <- rentrez::entrez_search(db="pubmed", pubmed.query, use_history=TRUE, retmax=retmax)
-  pubmed.summaries <- rentrez::entrez_summary(db="pubmed", id=pubmed.result$id)
-  pubmed.df <- data.frame(Date=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortpubdate")), FirstAuthor=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortfirstauthor")), Journal=rentrez::extract_from_esummary(pubmed.summaries, elements=c("fulljournalname")), Title=rentrez::extract_from_esummary(pubmed.summaries, elements=c("title")), row.names=NULL)
+  if(length(pubmed.result$id)>0) {
+    pubmed.summaries <- rentrez::entrez_summary(db="pubmed", id=pubmed.result$id)
+    pubmed.df <- data.frame(Date=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortpubdate")), FirstAuthor=rentrez::extract_from_esummary(pubmed.summaries, elements=c("sortfirstauthor")), Journal=rentrez::extract_from_esummary(pubmed.summaries, elements=c("fulljournalname")), Title=rentrez::extract_from_esummary(pubmed.summaries, elements=c("title")), row.names=NULL)
+  } else {
+    pubmed.result$count <- 0
+    pubmed.df <- data.frame(Date=NA, FirstAuthor=NA, Journal=NA, Title=NA, row.names=NULL)
+  }
   return(list(count=pubmed.result$count,   recent.papers =   pubmed.df ))
 }
 
