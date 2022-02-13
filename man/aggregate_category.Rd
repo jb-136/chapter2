@@ -4,8 +4,12 @@
 \alias{aggregate_category}
 \title{Aggregate count by category}
 \usage{
-aggregate_category(locations, focal = "realm", group_by = "taxon",
-  return_frequency = FALSE)
+aggregate_category(
+  locations,
+  focal = "realm",
+  group_by = "taxon",
+  return_frequency = FALSE
+)
 }
 \arguments{
 \item{locations}{Data.frame of locations (i.e., from locality_add_habitat_biome)}

@@ -4,8 +4,12 @@
 \alias{chapter2_fitGeiger}
 \title{Try geiger's fitContinuous or fitDiscrete on all the continuous datasets using all geiger models}
 \usage{
-chapter2_fitGeiger(chapter2, models = NULL, keep = c("continuous",
-  "discrete"), ncores = NULL)
+chapter2_fitGeiger(
+  chapter2,
+  models = NULL,
+  keep = c("continuous", "discrete"),
+  ncores = NULL
+)
 }
 \arguments{
 \item{chapter2}{a chapter2 class object, with tree and data}

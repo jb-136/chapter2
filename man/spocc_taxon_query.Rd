@@ -4,9 +4,15 @@
 \alias{spocc_taxon_query}
 \title{Query many sources at once using spocc to get latitude and longitude}
 \usage{
-spocc_taxon_query(taxon, limit = 10000, sources = c("gbif", "inat",
-  "idigbio"), has_coords = TRUE, by_species = TRUE, verbose = TRUE,
-  ...)
+spocc_taxon_query(
+  taxon,
+  limit = 10000,
+  sources = c("gbif", "inat", "idigbio"),
+  has_coords = TRUE,
+  by_species = TRUE,
+  verbose = TRUE,
+  ...
+)
 }
 \arguments{
 \item{taxon}{The taxon to get. If a vector, loops over it.}

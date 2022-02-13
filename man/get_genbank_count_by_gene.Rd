@@ -4,8 +4,10 @@
 \alias{get_genbank_count_by_gene}
 \title{Get the count of number of sequences for different genes for this taxon}
 \usage{
-get_genbank_count_by_gene(taxon, focal.genes = c("COI", "18S", "28S",
-  "matk", "rbcl"))
+get_genbank_count_by_gene(
+  taxon,
+  focal.genes = c("COI", "18S", "28S", "matk", "rbcl")
+)
 }
 \arguments{
 \item{taxon}{The clade of interest}
