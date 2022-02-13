@@ -29,10 +29,10 @@ merging_trees_with_MRP <- function(
 		#
 		# but what you do here works exactly the same
 	if(is.null(tree_backbone$node.label)) {
-		tree_backbone$node.label <- rep(NA, Nnode(tree_backbone))
+		tree_backbone$node.label <- rep(NA, ape::Nnode(tree_backbone))
 		}
 	if(is.null(tree_secondary$node.label)) {
-		tree_secondary$node.label <- rep(NA, Nnode(tree_secondary))
+		tree_secondary$node.label <- rep(NA, ape::Nnode(tree_secondary))
 		}
 	#
 	# rename all unnamed clades in both
@@ -61,7 +61,7 @@ merging_trees_with_MRP <- function(
 	#cool
 	tree_bb_proppart <- ape::prop.part(tree_backbone)
 	mrp_backbone <- sapply(tree_bb_proppart, function(x){
-		   member <- rep(0, Ntip(tree_backbone))
+		   member <- rep(0, ape::Ntip(tree_backbone))
 		   member[x] <- 1
 		   return(member)
 	  }
@@ -83,7 +83,7 @@ merging_trees_with_MRP <- function(
 	# use prop.part again
 	tree_sec_proppart <- ape::prop.part(tree_secondary)
 	mrp_sec <- sapply(tree_sec_proppart, function(x){
-			member <- rep(0, Ntip(tree_secondary))
+			member <- rep(0, ape::Ntip(tree_secondary))
 			member[x] <- 1
 			return(member)
 			}
@@ -199,17 +199,17 @@ merging_trees_with_MRP <- function(
 			#and remove artificial outgroup
 		# code modeled on phangorn's supertree functions
 	if (inherits(supertrees_out, "multiPhylo")) {
-		supertrees_out  <- lapply(supertrees_out, root,
+		supertrees_out  <- lapply(supertrees_out, ape::root,
 			"placeholder_artificial_outgroup")
-		supertrees_out <- lapply(supertrees_out, drop.tip,
+		supertrees_out <- lapply(supertrees_out, ape::drop.tip,
 			"placeholder_artificial_outgroup")
 		supertrees_out <- lapply(supertrees_out,
 			paleotree::cleanNewPhylo)
         class(supertrees_out) <- "multiPhylo"
       }else{
-        supertrees_out <- root(supertrees_out, 
+        supertrees_out <- ape::root(supertrees_out, 
 			"placeholder_artificial_outgroup")
-        supertrees_out <- drop.tip(supertrees_out, 
+        supertrees_out <- ape::drop.tip(supertrees_out, 
 			"placeholder_artificial_outgroup")
 		supertrees_out <- paleotree::cleanNewPhylo(supertrees_out)
       }
@@ -224,7 +224,7 @@ merging_trees_with_MRP <- function(
 add_single_taxon_to_tree <- function(tree, 
 		new_tip_label,
 		# default location to add tip is the root
-		nodeID = Ntip(tree) + 1
+		nodeID = ape::Ntip(tree) + 1
 		){
 	###############################
 	# currently only handles trees without branch lengths
@@ -373,7 +373,7 @@ expand_collapsed_clades_post_pratchet<-function(
 		tips_to_add <- saved_sets[[i]]
 		#
 		for(j in 1:length(tips_to_add)){
-			#print(Ntip(tree))
+			#print(ape::Ntip(tree))
 			#print(tree$tip.label)
 			#print(tip_names)
 			#
@@ -389,7 +389,7 @@ expand_collapsed_clades_post_pratchet<-function(
 				tree= tree, 
 				new_tip_label = tips_to_add[j],
 				# default location to add tip is the root
-				nodeID = Ntip(tree) + 1
+				nodeID = ape::Ntip(tree) + 1
 				)
 			}
 		#
@@ -399,7 +399,7 @@ expand_collapsed_clades_post_pratchet<-function(
 			}
 		}
 	# check that it has the correct number of taxa
-	if(Ntip(tree) != expected_num_OTUs){
+	if(ape::Ntip(tree) != expected_num_OTUs){
 		stop(
 			"Iterative collapsing & expansion of OTUs failed to produce a tree of the right number of OTUs"
 			)
@@ -493,7 +493,7 @@ find_unshared_nodes <- function(tree, tip_labels){
 get_node_lineage <- function(tree, node){
 	# find all nodes leading up to each mom node
 	lineage <- node
-	while(lineage[1] != (Ntip(tree) + 1)){
+	while(lineage[1] != (ape::Ntip(tree) + 1)){
 		mom_node <- tree$edge[tree$edge[,2] == lineage[1],1]
 		lineage <- c(mom_node, lineage)
 		}

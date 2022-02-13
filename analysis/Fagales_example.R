@@ -21,10 +21,10 @@ tree_secondary <- paleotree::makePBDBtaxonTree(
      method = "parentChild"
      )
 # look at stats of the trees
-Ntip(tree_backbone)
-Nnode(tree_backbone)
-Ntip(tree_secondary)
-Nnode(tree_secondary)
+ape::Ntip(tree_backbone)
+ape::Nnode(tree_backbone)
+ape::Ntip(tree_secondary)
+ape::Nnode(tree_secondary)
 
 
 source("~//chapter2//R//merging_trees_with_MRP.R")
