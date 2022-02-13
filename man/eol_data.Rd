@@ -4,10 +4,10 @@
 \alias{eol_data}
 \title{Query Encyclopedia of Life with a URL to return all data for a given taxon}
 \usage{
-eol_data(url = "https://eol.org/pages/491995/data")
+eol_data(species)
 }
 \arguments{
-\item{url}{URL to query, include /data}
+\item{species}{Species name to query}
 }
 \value{
 A data frame of trait category, value, source, and definitions

@@ -166,11 +166,11 @@ descendant_species <- function(taxon) {
   #col_id <- taxize::get_colid_(taxon)[[1]]$id[1]
   #species <- taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name
 
-  try(gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1])
-  try(species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name)
-  try(species <- c(species, rownames(datelife::get_ott_children(input=taxon)[[1]])))
-  try(col_id <- taxize::get_colid_(taxon)[[1]]$id[1])
-  try(species <- c(species,taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name))
+  try(gbif_id <- taxize::get_gbifid_(taxon)[[1]]$usagekey[1], silent=TRUE)
+  try(species <- taxize::downstream(gbif_id, downto = "species", db = "gbif", limit=1000)[[1]]$name, silent=TRUE)
+  try(species <- c(species, rownames(datelife::get_ott_children(input=taxon)[[1]])), silent=TRUE)
+  #try(col_id <- taxize::get_colid_(taxon)[[1]]$id[1])
+  #try(species <- c(species,taxize::downstream(col_id, downto = "species", db = "col")[[1]]$childtaxa_name))
   try(species <- unique(species))
   return(species)
 }
@@ -363,4 +363,29 @@ get_datelife_biggest <- function(taxon) {
 get_wikipedia_summary <- function(taxon) {
   URL <- paste0('https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles=', utils::URLencode(taxon))
   return(jsonlite::fromJSON(URL)$query$pages[[1]]$extract)
+}
+
+
+#' Get info from Encyclopedia of Life
+#'
+#' @param taxon The clade to investigate
+#' @return data.frame with species name, trait category, trait value, and other information
+#' @export
+#' @examples
+#' info <- get_eol("Gallus")
+get_eol <- function(taxon) {
+  descendants <- descendant_species(taxon)
+  all_df <- data.frame()
+  for (taxon_index in seq_along(descendants)) {
+	  local_df <- data.frame()
+	  try(local_df <- eol_data(descendants[taxon_index]), silent=TRUE)
+	  Sys.sleep(1) #just to make sure we stay nice
+	  if(nrow(local_df)>0) {
+		  print(paste0("Found ", nrow(local_df), " EOL datapoints for ", length(unique(local_df$trait)), " traits for ", descendants[taxon_index]))
+		  all_df <- rbind(all_df, local_df)
+	  } else {
+		 print(paste0("Found 0 EOL datapoints for ", descendants[taxon_index]))  
+	  }
+  }
+  return(all_df)
 }
