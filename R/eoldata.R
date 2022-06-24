@@ -22,7 +22,8 @@ eol_data <- function(species) {
 	#space between letters and numbers
     trait_list_text <- gsub("([0-9]*) records hidden", " \\1 records hidden", trait_list_text)
   	trait_list_text <- gsub("([0-9]*) record hidden", " \\1 record hidden", trait_list_text)
-	trait_list_text <- gsub('\\d* record hidden \\— show all', "", trait_list_text)
+	#this is removing trait data (e.g. all habitat trait data are removed for Formica accreta)
+	trait_list_text <- gsub('\\d* record hidden \\— show all', "", trait_list_text) # nolint
 	trait_list_text <- gsub('\\d* records hidden \\— show all', "", trait_list_text) # nolint
 
 	trait_list_text <- gsub('\nshow all records', "", trait_list_text)
