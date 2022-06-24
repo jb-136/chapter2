@@ -19,8 +19,11 @@ eol_data <- function(species) {
 	all_ul <-  rvest::html_elements(input,'ul')
 	trait_ul <- all_ul[[5]]
 	trait_list_text <- rvest::html_text2(rvest::html_nodes(trait_ul, "div"))
+	#space between letters and numbers
+    trait_list_text <- gsub("([0-9]*) records hidden", " \\1 records hidden", trait_list_text)
+  	trait_list_text <- gsub("([0-9]*) record hidden", " \\1 record hidden", trait_list_text)
 	trait_list_text <- gsub('\\d* record hidden \\— show all', "", trait_list_text)
-	trait_list_text <- gsub('\\d* records hidden \\— show all', "", trait_list_text)
+	trait_list_text <- gsub('\\d* records hidden \\— show all', "", trait_list_text) # nolint
 
 	trait_list_text <- gsub('\nshow all records', "", trait_list_text)
 	trait_list_raw <- as.character(rvest::html_nodes(trait_ul, "div"))
