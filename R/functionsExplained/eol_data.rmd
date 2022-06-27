@@ -1,0 +1,140 @@
+---
+title: "EOL web scraping"
+author: "JM_Wiggins"
+date: '2022-06-27'
+output: html_document
+---
+### Encycopedia of Life Web Scrape
+# A step by step walkthrough of the `eol_data` function in `bomeara/chapter2`  
+To install the repo:
+```{r}
+#install the devtools package (if not already installed)
+install.packages("devtools")
+#go to the library and get the devtools package
+library(devtools)
+#install chapter2
+devtools::install_github("bomeara/chapter2")
+#go to the library and get chapter2
+library(chapter2)
+```
+  
+To run the `eol_data` function:
+```{r}
+#function_name("Genus species")
+eol_data("Formica accreta")
+```
+  
+The function in its entirety is at the bottom of this page.  
+  
+## Breaking down the components of the function:
+# Locate the correct EOL webpage
+Search EOL for the species name entered in the function call (see above: "Formica accreta").  
+The code below tells R to create a variable that contains the url with the species name pasted in the correct location with no spaces between `sep=""`
+```{r eval=FALSE}
+#this code will not work because it is designed to sit inside a function where (species) has been supplied. 
+searchurl <- paste0('http://eol.org/api/search/1.0.json?q=', URLencode(species), '&exact=1&page=1&key=')
+```
+When species has been supplied in the function the code that runs will look like this:
+```{r}
+searchurl <- paste0('http://eol.org/api/search/1.0.json?q=', URLencode("Formica accreta"), '&exact=1&page=1&key=')
+searchurl
+```
+Copy-paste this link into your browser. It looks like gobbeldly-gook but there is one particular piece of information we need. Find the word 'link'. This is what the next steps will extract.  
+Create an empty variable calld `url`  
+Then ask the library `jsonlite` to use the function `fromJSON` to find the link on the webpage created and saved as `searchurl` (above) and add '/data' to the end of the url because this is where the information we are looking for is stored
+```{r}
+	url <- NA
+	url <- paste0(jsonlite::fromJSON(searchurl)$results$link[1], "/data")
+	url
+```
+Again, copy-paste this link to see the page we will be scraping in the next steps  
+  
+#Scrape the webpage
+Ask the library `rvest` to using the function `read_html` to save the url (created above) as an xml_document in an object called `input`
+```{r}
+input <-  rvest::read_html(url)
+input
+```
+Ask the library `rvest` to using the function `html_elements` to to search `input` (created above) for the css element tags 'ul' and save them in an object `all_ul`
+```{r}
+all_ul <-  rvest::html_elements(input,'ul')
+head(all_ul)
+```
+The 5th 'ul' is class "traits" this is the one we want so we extract the 5th element and save it as list called `trait_ul`.
+```{r}
+trait_ul <- all_ul[[5]]
+```
+`rvest::html_text2`: convert to plain text so that `trait_list_text` is a vector of stings,  `rvest::html_nodes`: extract all "div" nodes from `trait_ul`
+```{r}
+trait_list_text <- rvest::html_text2(rvest::html_nodes(trait_ul, "div"))
+head(trait_list_text)
+```
+The resulting vector has strings that are not data we need like:
+```{r}
+trait_list_text[[60]]
+trait_list_text[[62]]
+```
+Also viewable at the webpage we created above `url`  
+```{r}
+trait_list_text <- gsub("([0-9]*) records hidden", " \\1 records hidden", trait_list_text)
+trait_list_text[[60]]
+trait_list_text[[62]]
+```
+```{r}
+trait_list_text <- gsub('\\d* records hidden \\— show all', "", trait_list_text)
+trait_list_text[[60]]
+trait_list_text[[62]]
+```
+```{r}
+trait_list_text <- gsub('\nshow all records', "", trait_list_text)
+```
+
+
+```{r}
+trait_list_raw <- as.character(rvest::html_nodes(trait_ul, "div"))
+```
+
+Remove empty strings
+```{r}
+empty <- which(nchar(trait_list_text)==0)
+trait_list_text <- trait_list_text[-empty]
+trait_list_raw <- trait_list_raw[-empty]
+```
+
+Find trait classes
+```{r}
+data_heads <- which(grepl("h3", trait_list_raw))
+```
+
+
+```{r}
+trait_df <- data.frame(matrix(nrow=0, ncol=6))
+colnames(trait_df) <- c("species", "trait", "value", "source", "URI", "definition")
+```
+
+```{r}
+data_head_plus_end <- c(-1+data_heads[-1], length(trait_list_text))
+```
+
+```{r}
+for (i in seq_along(data_heads)) {
+	relevant_rows <- trait_list_text[(data_heads[i]+1):(data_head_plus_end[i])]
+		
+	relevant_rows <- relevant_rows[grepl(".+\\\n.+\\\nURI", relevant_rows)]
+		
+	for(j in seq_along(relevant_rows)) {
+		trait_info <- strsplit(relevant_rows[j], "\n")[[1]][2]
+		source_info <- strsplit(relevant_rows[j], "\n")[[1]][1]
+		URI_info <- strsplit(relevant_rows[j], "\n")[[1]][3]
+		definition_info <- NA
+		try(definition_info <- strsplit(relevant_rows[j], "\n")[[1]][4])
+    
+		#species name manually inserted here for example
+		trait_df <- rbind(trait_df, data.frame(species="Formica accreta", trait=gsub("\n", "", trait_list_text[data_heads[i]]), value=trait_info, source=source_info, URI=URI_info, definition=definition_info))
+	}
+}
+```
+
+
+
+
