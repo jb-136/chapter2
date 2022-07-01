@@ -51,3 +51,22 @@ eol_data <- function(species) {
 	}
 	return(trait_df)
 }
+
+
+#'  Collapse the data frame produced by eol_data to a single row with traits as columns
+#'
+#' @param eol_df A data frame produced by the function eol_data
+#' @return A data frame of one row with columns: behavior circadian rhythm, developmental mode, visual system, and wing morphology
+#' @export
+#' 
+#' This works for a single species but not for the multi-species data frame produced by get_eol
+eol_traits <-function(eol_df){
+  df2 <- subset(eol_df, select = c(species, trait, value))
+  #remove duplicate rows
+  clean_df <- dplyr::distinct(df2, .keep_all = TRUE)
+  #collapse values into a single cell
+  group_df <- clean_df %>% dplyr::select(species, trait, value) %>% dplyr::group_by(trait) %>% dplyr::mutate(Grp = paste0(value, collapse = ";")) %>% dplyr::distinct(species, trait, Grp, .keep_all = FALSE)
+  #pivot df so that each trait is a column
+  wider_df <- tidyr::pivot_wider(group_df, names_from = trait, values_from = Grp)
+  return(wider_df)
+}
