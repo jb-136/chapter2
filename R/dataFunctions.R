@@ -331,7 +331,7 @@ get_pubmed <- function(taxon, search.string=' AND phylogeny',retmax=50) {
 #' Get location, realm, and biome
 #'
 #' @param taxon Clade of interest
-#" @param limit Maximum number of points per species per source
+#' @param limit Maximum number of points per species per source
 #' @return list containing a data.frame of species and locations, a table of realms (biogeographic regions), and a table of biomes
 #' @export
 get_location_realm_biome <- function(taxon, limit=10000) {
